@@ -49,7 +49,7 @@ People struggle to discover meaningful volunteering activities that match their 
 
 The heart of Action Atlas is an AI-powered semantic search that understands natural language queries and returns relevant volunteering activities based on meaning, not just keywords.
 
-**Technical Approach** (inspired by thegoodsearch):
+**Technical Approach** :
 - Vector embeddings using OpenAI's text-embedding models
 - ChromaDB for efficient vector similarity search
 - Location-aware search with geocoding and geospatial sorting

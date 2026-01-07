@@ -3,7 +3,7 @@ set -e
 
 # Configuration
 REPO="YOUR_ORG/action-atlas"  # UPDATE THIS with your GitHub org/user
-FILE_NAME="thegoodsearch.agz"
+FILE_NAME="seed-dataset.agz"
 DEFAULT_VERSION="1.0.0"
 
 # Colors

@@ -268,7 +268,7 @@ db.activities.aggregate([
 ## References
 
 - [MongoDB Atlas Vector Search Documentation](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/)
-- [thegoodsearch Codebase Analysis](../architecture.md#database-stack)
+- [thegoodsearch POC Codebase Analysis](../architecture.md#database-stack)
 - [Qdrant vs MongoDB Atlas Comparison](https://zilliz.com/comparison/qdrant-vs-mongodb-atlas)
 - [Vector Database Comparison 2026](https://www.firecrawl.dev/blog/best-vector-databases-2025)
 

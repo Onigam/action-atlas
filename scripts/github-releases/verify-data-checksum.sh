@@ -2,12 +2,12 @@
 set -e
 
 # Configuration
-FILE_NAME="thegoodsearch.agz"
+FILE_NAME="seed-dataset.agz"
 DATA_DIR="$(cd "$(dirname "$0")/.." && pwd)/data"
 FILE_PATH="$DATA_DIR/$FILE_NAME"
 
 # Expected checksum (UPDATE THIS after first upload)
-# Get the checksum by running: md5 data/thegoodsearch.agz
+# Get the checksum by running: md5 data/seed-dataset.agz
 EXPECTED_CHECKSUM=""  # TODO: Add checksum after first upload
 
 # Colors

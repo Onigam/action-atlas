@@ -71,8 +71,8 @@ echo ""
 
 # 5. Check data file
 echo -e "${BLUE}[5/7] Checking data file...${NC}"
-if [ -f "data/thegoodsearch.agz" ]; then
-  FILE_SIZE=$(du -h data/thegoodsearch.agz | cut -f1)
+if [ -f "data/seed-dataset.agz" ]; then
+  FILE_SIZE=$(du -h data/seed-dataset.agz | cut -f1)
   echo -e "${GREEN}✓ Data file exists ($FILE_SIZE)${NC}"
 
   # Verify checksum if script is configured
@@ -127,7 +127,7 @@ else
 fi
 
 # Check data file
-if [ -f "data/thegoodsearch.agz" ]; then
+if [ -f "data/seed-dataset.agz" ]; then
   echo -e "${GREEN}✓ Data file present${NC}"
 else
   echo -e "${RED}✗ Data file missing${NC}"
