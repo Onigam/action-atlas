@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: 20
+  PNPM_VERSION: 8
+
+jobs:
+  test:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install GitHub CLI
+        run: |
+          type -p curl >/dev/null || sudo apt install curl -y
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+            sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
+            https://cli.github.com/packages stable main" | \
+            sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify data file downloaded
+        run: |
+          if [ -f "data/thegoodsearch.agz" ]; then
+            echo "✓ Data file downloaded successfully"
+            ls -lh data/thegoodsearch.agz
+          else
+            echo "✗ Data file not found"
+            exit 1
+          fi
+
+      - name: Type check
+        run: pnpm type-check
+        continue-on-error: true  # Continue even if type check fails (early stage)
+
+      - name: Lint
+        run: pnpm lint
+        continue-on-error: true  # Continue even if lint fails (early stage)
+
+      - name: Run tests
+        run: pnpm test
+        continue-on-error: true  # Continue even if tests fail (early stage)
+
+      - name: Build
+        run: pnpm build
+        continue-on-error: true  # Continue even if build fails (early stage)
+
+  # Uncomment when ready for automated deployments
+  # deploy-preview:
+  #   name: Deploy Preview
+  #   needs: test
+  #   if: github.event_name == 'pull_request'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: amondnet/vercel-action@v25
+  #       with:
+  #         vercel-token: ${{ secrets.VERCEL_TOKEN }}
+  #         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+  #         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # deploy-production:
+  #   name: Deploy Production
+  #   needs: test
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: amondnet/vercel-action@v25
+  #       with:
+  #         vercel-token: ${{ secrets.VERCEL_TOKEN }}
+  #         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+  #         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+  #         vercel-args: '--prod'
