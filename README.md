@@ -1,4 +1,4 @@
-# Event for Good
+# Action Atlas
 
 A platform to help event organizers discover activities proposed by non-profit organizations and easily find the necessary contacts to organize impactful events.
 

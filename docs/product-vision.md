@@ -1,4 +1,4 @@
-# Product Vision: Event for Good
+# Product Vision: Action Atlas
 
 ## Problem Statement
 
