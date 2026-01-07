@@ -17,7 +17,7 @@ While we recommend **Shared MongoDB Atlas** for most teams, these alternatives m
 
 ### Overview
 
-Distribute the `thegoodsearch.agz` file via GitHub Releases, developers download on setup.
+Distribute the `seed-dataset.agz` file via GitHub Releases, developers download on setup.
 
 ### When to Use
 
@@ -38,9 +38,9 @@ Distribute the `thegoodsearch.agz` file via GitHub Releases, developers download
 ```bash
 # Upload data file to GitHub Release
 gh release create v1.0-data \
-  thegoodsearch.agz \
+  seed-dataset.agz \
   --title "Development Data v1.0" \
-  --notes "Initial POC data from thegoodsearch"
+  --notes "Initial POC data"
 ```
 
 **Developer**:
@@ -49,7 +49,7 @@ gh release create v1.0-data \
 bash scripts/github-releases/download-data.sh
 
 # Extract and restore
-mongorestore --gzip --archive=thegoodsearch.agz \
+mongorestore --gzip --archive=seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 
 # Generate embeddings (costs $1-2 per developer)
@@ -119,7 +119,7 @@ git lfs track "*.agz"
 git add .gitattributes
 
 # Add data file
-git add thegoodsearch.agz
+git add seed-dataset.agz
 git commit -m "Add development data via Git LFS"
 git push
 ```
@@ -134,7 +134,7 @@ git lfs install
 git lfs pull
 
 # Restore to MongoDB
-mongorestore --gzip --archive=thegoodsearch.agz \
+mongorestore --gzip --archive=seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 
 # Generate embeddings
@@ -202,28 +202,28 @@ aws configure
 aws s3 mb s3://action-atlas-data --region us-east-1
 
 # Upload data
-aws s3 cp thegoodsearch.agz s3://action-atlas-data/ \
+aws s3 cp seed-dataset.agz s3://action-atlas-data/ \
   --storage-class INTELLIGENT_TIERING
 ```
 
 **Developer Access (Presigned URL)**:
 ```bash
 # Maintainer generates temporary URL
-aws s3 presign s3://action-atlas-data/thegoodsearch.agz \
+aws s3 presign s3://action-atlas-data/seed-dataset.agz \
   --expires-in 3600  # 1 hour
 
 # Share URL with developers
 # Developers download:
-curl -o thegoodsearch.agz "https://...presigned-url..."
+curl -o seed-dataset.agz "https://...presigned-url..."
 ```
 
 **Developer Access (IAM)**:
 ```bash
 # Developers with AWS credentials
-aws s3 cp s3://action-atlas-data/thegoodsearch.agz .
+aws s3 cp s3://action-atlas-data/seed-dataset.agz .
 
 # Restore to MongoDB
-mongorestore --gzip --archive=thegoodsearch.agz \
+mongorestore --gzip --archive=seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 
 # Generate embeddings
@@ -290,7 +290,7 @@ brew install mongodb-community  # macOS
 ```bash
 # Get data file (from GitHub Releases or team)
 # Extract to local MongoDB
-mongorestore --gzip --archive=thegoodsearch.agz \
+mongorestore --gzip --archive=seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 ```
 
@@ -370,8 +370,8 @@ dvc init
 dvc remote add -d storage s3://action-atlas-dvc/data
 
 # Add data file
-dvc add thegoodsearch.agz
-git add thegoodsearch.agz.dvc .dvc/config
+dvc add thegseed-datasetoodsearch.agz
+git add seed-dataset.agz.dvc .dvc/config
 git commit -m "Track data with DVC"
 
 # Push to remote
@@ -513,12 +513,6 @@ git commit && git push
 ---
 
 ## Scripts Available
-
-### MongoDB Atlas Approach
-Location: `scripts/data/`
-- `transform-thegoodsearch.ts` - Schema transformation
-- `generate-embeddings.ts` - Batch embedding generation
-- `upload-to-atlas.ts` - Upload to cloud
 
 ### GitHub Releases Approach
 Location: `scripts/github-releases/`

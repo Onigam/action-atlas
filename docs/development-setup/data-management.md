@@ -20,7 +20,7 @@
 
 ### The Challenge
 
-Action Atlas requires seed data for development containing real volunteering activities and organizations. The source data is a **26MB MongoDB archive** (`thegoodsearch.agz`) from the thegoodsearch POC containing:
+Action Atlas requires seed data for development containing real volunteering activities and organizations. The source data is a **26MB MongoDB archive** (`seed-dataset.agz`) from the thegoodsearch POC containing:
 
 - **109MB uncompressed** MongoDB BSON data
 - **2 collections**: `charities` and `activities`
@@ -34,7 +34,7 @@ Distributing this data to developers presents several challenges:
 1. **Git Anti-Pattern**: Committing 26MB binary files bloats repository permanently
 2. **Embedding Cost**: Each developer generating embeddings costs $1-2 × team size
 3. **Consistency**: Different developers might have different data versions
-4. **Schema Mismatch**: thegoodsearch schema differs from Action Atlas schema
+4. **Schema Mismatch**: seed-dataset schema differs from Action Atlas schema
 5. **Setup Friction**: Complex onboarding reduces developer velocity
 
 ---
@@ -197,7 +197,7 @@ After comprehensive analysis by research, DevOps, and architecture review agents
 ```
 Phase 1: One-Time Setup (Maintainer)
 ┌─────────────────────────────────────────────────────┐
-│ 1. Extract thegoodsearch.agz → Local MongoDB       │
+│ 1. Extract seed-dataset.agz → Local MongoDB       │
 │ 2. Transform schema → Action Atlas format          │
 │ 3. Generate embeddings → OpenAI API (~$2)          │
 │ 4. Upload to MongoDB Atlas M0 → actionatlas-dev    │
@@ -279,23 +279,23 @@ sudo apt-get install mongodb-database-tools
 # Download from: https://www.mongodb.com/try/download/database-tools
 ```
 
-**Extract thegoodsearch.agz**:
+**Extract seed-dataset.agz**:
 ```bash
 # Start local MongoDB (for transformation)
 docker run -d -p 27017:27017 --name mongo-temp mongo:latest
 
 # Extract archive
-mongorestore --gzip --archive=thegoodsearch.agz \
-  --uri="mongodb://localhost:27017/thegoodsearch_raw"
+mongorestore --gzip --archive=seed-dataset.agz \
+  --uri="mongodb://localhost:27017/seed-dataset_raw"
 
 # Verify extraction
-mongosh "mongodb://localhost:27017/thegoodsearch_raw" \
+mongosh "mongodb://localhost:27017/seed-dataset_raw" \
   --eval "db.activities.countDocuments()"
 ```
 
 **Run Transformation Script**:
 ```bash
-# Transform thegoodsearch → Action Atlas schema
+# Transform seed-dataset → Action Atlas schema
 pnpm data:transform
 
 # This script:
@@ -400,13 +400,13 @@ MONGODB_URI=mongodb+srv://dev-readonly:PASSWORD@action-atlas-dev.xxxxx.mongodb.n
 
 ## Schema Transformation
 
-### Mapping: thegoodsearch → Action Atlas
+### Mapping: seed-dataset → Action Atlas
 
 #### Organizations (charities → organizations)
 
 ```typescript
 // Transform function
-function transformCharity(charity: TheGoodSearchCharity): Organization {
+function transformCharity(charity: SeedDatasetCharity): Organization {
   return {
     organizationId: charity.cuid,
     name: charity.name,
@@ -438,8 +438,8 @@ function transformCharity(charity: TheGoodSearchCharity): Organization {
 ```typescript
 // Transform function
 function transformActivity(
-  activity: TheGoodSearchActivity,
-  charities: Map<string, TheGoodSearchCharity>
+  activity: SeedDatasetActivity,
+  charities: Map<string, SeedDatasetCharity>
 ): Activity {
   const charity = charities.get(activity.charity);
   const primaryLocation = activity.geolocations?.[0];
@@ -458,7 +458,7 @@ function transformActivity(
 
     category: inferCategory(activity.name, description),  // ML or keyword-based
 
-    skills: [],  // Not in thegoodsearch, leave empty
+    skills: [],  // Not in seed-dataset, leave empty
 
     location: primaryLocation ? {
       address: {
@@ -828,7 +828,7 @@ mongodump --uri="mongodb+srv://..." --archive | gzip | \
 2. **✅ One-Time Embedding Generation** ($2 total)
    - Rationale: Saves $2 per developer, ensures consistency
 
-3. **✅ Transform thegoodsearch Schema** to Action Atlas
+3. **✅ Transform seed-dataset Schema** to Action Atlas
    - Rationale: Clean architecture, optimize for vector search, remove legacy cruft
 
 4. **✅ Exclude Binary Files from Git**
@@ -841,7 +841,7 @@ mongodump --uri="mongodb+srv://..." --archive | gzip | \
 
 **For Maintainers**:
 1. Create MongoDB Atlas M0 cluster
-2. Transform thegoodsearch data
+2. Transform seed-dataset data
 3. Generate embeddings ($2 cost)
 4. Upload to Atlas and configure indexes
 5. Share connection string with team

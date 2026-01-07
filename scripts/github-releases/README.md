@@ -28,7 +28,7 @@ Downloads data file from GitHub Releases.
 # Download latest release
 bash scripts/github-releases/download-data.sh
 
-# Downloads to: ./data/thegoodsearch.agz
+# Downloads to: ./data/seed-dataset.agz
 ```
 
 **Features**:
@@ -69,7 +69,7 @@ Verifies data file integrity using MD5 checksum.
 # Verify downloaded file
 bash scripts/github-releases/verify-data-checksum.sh
 
-# Checks: data/thegoodsearch.agz
+# Checks: data/seed-dataset.agz
 # Against: Expected checksum in script
 ```
 
@@ -119,7 +119,7 @@ bash scripts/github-releases/download-data.sh
 docker run -d -p 27017:27017 --name mongo mongo:latest
 
 # 4. Restore data
-mongorestore --gzip --archive=data/thegoodsearch.agz \
+mongorestore --gzip --archive=data/seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 
 # 5. Generate embeddings (costs $1-2)

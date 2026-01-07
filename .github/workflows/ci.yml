@@ -29,33 +29,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
-      - name: Install GitHub CLI
-        run: |
-          type -p curl >/dev/null || sudo apt install curl -y
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
-            sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
-            https://cli.github.com/packages stable main" | \
-            sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh -y
-
+      
       - name: Install dependencies
         run: pnpm install
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify data file downloaded
-        run: |
-          if [ -f "data/thegoodsearch.agz" ]; then
-            echo "✓ Data file downloaded successfully"
-            ls -lh data/thegoodsearch.agz
-          else
-            echo "✗ Data file not found"
-            exit 1
-          fi
 
       - name: Type check
         run: pnpm type-check

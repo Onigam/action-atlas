@@ -393,7 +393,6 @@ To be determined. This project is currently in active development.
 
 ## 🙏 Acknowledgments
 
-- **thegoodsearch** - Inspiration for semantic search architecture
 - **Vercel** - For the excellent AI SDK and hosting platform
 - **MongoDB** - For Atlas Vector Search capabilities
 - **OpenAI** - For powerful embedding models

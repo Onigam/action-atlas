@@ -1,6 +1,6 @@
 # Development Environment Setup
 
-> Complete guide for setting up your Action Atlas development environment and managing the thegoodsearch POC data.
+> Complete guide for setting up your Action Atlas development environment and managing the seed-dataset POC data.
 
 ## 📋 Quick Links
 
@@ -13,77 +13,109 @@
 
 ## 🎯 Overview
 
-Action Atlas uses a **26MB MongoDB archive** (`thegoodsearch.agz`) containing real charity and volunteering activity data for development. This guide explains how to set up your environment efficiently.
+Action Atlas uses a **26MB MongoDB archive** (`seed-dataset.agz`) containing real charity and volunteering activity data for development. This guide explains how to set up your environment efficiently.
 
 ### What's in the Data File?
 
 - **Format**: MongoDB BSON archive (gzipped)
 - **Size**: 26MB compressed, 109MB uncompressed
 - **Collections**: `charities` (organizations) and `activities` (volunteering opportunities)
-- **Source**: thegoodsearch POC data
+- **Source**: seed-dataset POC data
 - **Purpose**: Seed data for development and testing
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start (10 Minutes)
 
-### Recommended: Shared MongoDB Atlas
+> **🎉 NEW (January 2026)**: MongoDB vector search now works locally! Docker is now the recommended approach.
 
-**Best for**: MVP development, small teams, fastest setup
+### ⭐ Recommended: Docker with Local Vector Search
+
+**Best for**: All teams, offline development, consistent environment
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/YOUR_ORG/action-atlas.git
 cd action-atlas
 
-# 2. Install dependencies
+# 2. Start MongoDB with vector search (Docker required)
+docker-compose up -d
+
+# Wait for initialization (first run: ~2-3 minutes)
+# Check progress: docker-compose logs -f mongodb-init
+
+# 3. Install dependencies
 pnpm install
 
-# 3. Set up environment
+# 4. Set up environment
 cp .env.example .env.local
 
-# 4. Add MongoDB Atlas connection (get from team)
 # Edit .env.local:
-MONGODB_URI=mongodb+srv://dev-readonly:PASSWORD@action-atlas-dev.mongodb.net/actionatlas-dev
-
-# Optional: Only if testing search functionality
-OPENAI_API_KEY=sk-...  # Get from https://platform.openai.com/api-keys
+MONGODB_URI=mongodb://localhost:27017/actionatlas
+OPENAI_API_KEY=sk-...  # For search queries only
 
 # 5. Start development
 pnpm dev
 
-# 6. Open browser
+# 6. Open browser and test!
 # http://localhost:3000
 ```
 
-**That's it!** The shared development database already contains:
-- ✅ Transformed activity data (Action Atlas schema)
-- ✅ Generated vector embeddings (no OpenAI key needed for this!)
-- ✅ Configured search indexes
-- ✅ Ready to query
+**What you get:**
+- ✅ Full MongoDB 8.2 with vector search support
+- ✅ Pre-loaded data with embeddings (from GitHub Releases)
+- ✅ Configured vector search indexes
+- ✅ Works completely offline
+- ✅ $0 cost, no cloud dependencies
+
+**Setup time**: 10 minutes (first run), 30 seconds after
+**Cost**: $0/month
+**Requirements**: Docker Desktop
+
+**See detailed guide**: [Docker Local Setup](./docker-local-setup.md)
+
+---
+
+### Alternative: Shared MongoDB Atlas (Cloud)
+
+**Best for**: No Docker, quick cloud setup
+
+```bash
+# 1-3. Same as above
+
+# 4. Configure cloud connection
+# Edit .env.local:
+MONGODB_URI=mongodb+srv://dev-readonly:PASSWORD@action-atlas-dev.mongodb.net/actionatlas-dev
+OPENAI_API_KEY=sk-...
+
+# 5-6. Same as above
+```
+
+**What you get:**
+- ✅ Instant setup (no Docker needed)
+- ✅ Shared data across team
+- ✅ Automatic backups
+- ❌ Requires internet connection
 
 **Setup time**: 5 minutes
-**Cost**: $0 (or ~$0.01 if testing many searches)
-**Onboarding friction**: Minimal
+**Cost**: $0/month (free tier)
+**Requirements**: MongoDB Atlas account
 
-> **💡 About the OpenAI API Key:**
-> - **NOT required** for: UI development, database work, browsing activities
-> - **Only required** for: Testing the search functionality (query embedding)
-> - **Cost**: ~$0.00002 per search query (20 searches = $0.0004)
-> - **Activity embeddings** are already in the database (pre-generated)
+> **💡 Why the change?**
+> MongoDB released vector search for Community Edition in September 2025. You can now run everything locally - no cloud needed!
 
 ---
 
 ## 📊 Approach Comparison
 
-| Approach | Setup | Cost | Best For | Documentation |
-|----------|-------|------|----------|---------------|
-| **Shared MongoDB Atlas** | 5 min | $0 | MVP, teams | [Data Management](./data-management.md) |
-| GitHub Releases | 10 min | $0 | File distribution | [Alternatives](./alternatives.md#github-releases) |
-| Git LFS | 15 min | $0-5 | Version control | [Alternatives](./alternatives.md#git-lfs) |
-| AWS S3 | 30 min | $0.10 | Production scale | [Alternatives](./alternatives.md#aws-s3) |
+| Approach | Setup | Cost | Offline | Vector Search | Consistency | Documentation |
+|----------|-------|------|---------|---------------|-------------|---------------|
+| **Docker + Local** ⭐ | 10 min | $0 | ✅ Yes | ✅ MongoDB 8.2 | ✅ Perfect | [Docker Setup](./docker-local-setup.md) |
+| MongoDB Atlas (cloud) | 5 min | $0 | ❌ No | ✅ Atlas | ✅ Perfect | [Data Management](./data-management.md) |
+| GitHub Releases | 15 min | $2/dev | ✅ Yes | ❌ Manual | ❌ Poor | [Alternatives](./alternatives.md#github-releases) |
+| Git LFS | 20 min | $0-5 | ✅ Yes | ❌ Manual | ⚠️ Medium | [Alternatives](./alternatives.md#git-lfs) |
 
-**Recommendation**: Start with **Shared MongoDB Atlas** for fastest development, migrate later if needed.
+**🎉 NEW Recommendation (January 2026)**: Start with **Docker + Local Vector Search** for best developer experience.
 
 ---
 
@@ -124,7 +156,7 @@ If you're setting up the shared development environment for the first time:
 
 2. **Transform and Upload Data**
    ```bash
-   # Extract thegoodsearch.agz
+   # Extract seed-dataset.agz
    pnpm data:extract
 
    # Transform to Action Atlas schema
@@ -200,7 +232,7 @@ pnpm data:generate-embeddings
 
 ## 🔍 Understanding the Data
 
-### thegoodsearch.agz Structure
+### seed-dataset.agz Structure
 
 **Collections**:
 
@@ -216,9 +248,9 @@ pnpm data:generate-embeddings
 
 ### Schema Transformation
 
-The data is transformed from thegoodsearch schema to Action Atlas schema:
+The data is transformed from seed-dataset schema to Action Atlas schema:
 
-**Before (thegoodsearch)**:
+**Before (seed-dataset)**:
 ```json
 {
   "cuid": "ckxxx",

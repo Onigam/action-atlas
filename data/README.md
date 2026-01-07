@@ -4,7 +4,7 @@
 
 ## Overview
 
-This directory contains the **thegoodsearch.agz** data file (26MB MongoDB archive) used for development. Files here are excluded from Git via `.gitignore`.
+This directory contains the **seed-dataset.agz** data file (26MB MongoDB archive) used for development. Files here are excluded from Git via `.gitignore`.
 
 **👉 For setup instructions, see**: [docs/development-setup/README.md](../docs/development-setup/README.md)
 
@@ -12,7 +12,7 @@ This directory contains the **thegoodsearch.agz** data file (26MB MongoDB archiv
 
 ## Files
 
-### thegoodsearch.agz (Not in Git)
+### seed-dataset.agz (Not in Git)
 
 - **Format**: MongoDB BSON archive (gzipped)
 - **Size**: 26MB compressed, 109MB uncompressed
@@ -61,7 +61,7 @@ bash scripts/github-releases/download-data.sh
 docker run -d -p 27017:27017 --name mongo mongo:latest
 
 # Restore data
-mongorestore --gzip --archive=data/thegoodsearch.agz \
+mongorestore --gzip --archive=data/seed-dataset.agz \
   --uri="mongodb://localhost:27017/actionatlas"
 
 # Verify
@@ -72,7 +72,7 @@ mongosh "mongodb://localhost:27017/actionatlas" \
 ### Transform Schema
 
 ```bash
-# Transform thegoodsearch → Action Atlas schema
+# Transform seed-dataset → Action Atlas schema
 pnpm data:transform
 ```
 
@@ -94,7 +94,7 @@ pnpm data:generate-embeddings
 data/
 ├── .gitkeep              # Keeps directory in Git
 ├── README.md             # This file
-└── thegoodsearch.agz     # Data file (in .gitignore)
+└── seed-dataset.agz     # Data file (in .gitignore)
 ```
 
 ---

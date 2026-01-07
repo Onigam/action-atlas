@@ -1,6 +1,6 @@
 # Data Management Scripts (MongoDB Atlas Approach)
 
-> Scripts for transforming thegoodsearch data and uploading to MongoDB Atlas.
+> Scripts for transforming seed-dataset data and uploading to MongoDB Atlas.
 
 ## Overview
 
@@ -12,9 +12,9 @@ These scripts support the **recommended approach**: Shared MongoDB Atlas develop
 
 ## Scripts
 
-### transform-thegoodsearch.ts
+### transform-seed-dataset.ts
 
-Transforms thegoodsearch schema to Action Atlas schema.
+Transforms seed-dataset schema to Action Atlas schema.
 
 **Purpose**:
 - Extract `charities` → `organizations`
@@ -25,9 +25,9 @@ Transforms thegoodsearch schema to Action Atlas schema.
 
 **Usage**:
 ```bash
-# Prerequisites: Local MongoDB with thegoodsearch data
-mongorestore --gzip --archive=thegoodsearch.agz \
-  --uri="mongodb://localhost:27017/thegoodsearch_raw"
+# Prerequisites: Local MongoDB with seed-dataset data
+mongorestore --gzip --archive=seed-dataset.agz \
+  --uri="mongodb://localhost:27017/seed-dataset_raw"
 
 # Run transformation
 pnpm data:transform
@@ -103,9 +103,9 @@ pnpm data:upload
 **One-Time Setup (Maintainer)**:
 
 ```bash
-# 1. Extract thegoodsearch.agz
-mongorestore --gzip --archive=thegoodsearch.agz \
-  --uri="mongodb://localhost:27017/thegoodsearch_raw"
+# 1. Extract seed-dataset.agz
+mongorestore --gzip --archive=seed-dataset.agz \
+  --uri="mongodb://localhost:27017/seed-dataset_raw"
 
 # 2. Transform schema
 pnpm data:transform

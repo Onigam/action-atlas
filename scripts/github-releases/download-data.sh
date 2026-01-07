@@ -4,7 +4,7 @@ set -e
 # Configuration
 REPO="YOUR_ORG/action-atlas"  # UPDATE THIS with your GitHub org/user
 RELEASE_TAG="data-v1.0.0"
-FILE_NAME="thegoodsearch.agz"
+FILE_NAME="seed-dataset.agz"
 DATA_DIR="$(cd "$(dirname "$0")/.." && pwd)/data"
 OUTPUT_PATH="$DATA_DIR/$FILE_NAME"
 EXPECTED_SIZE_MB=26  # Expected file size for validation
