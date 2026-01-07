@@ -19,14 +19,13 @@ if [ ! -f "$DATA_FILE" ]; then
         gh release download "$GITHUB_RELEASE_TAG" \
             --repo "$GITHUB_REPO" \
             --pattern "seed-dataset.agz" \
-            --dir /tmp
-        DATA_FILE="/tmp/seed-dataset.agz"
+            --dir /data
     else
         # Fallback to curl
         echo "Using curl (gh CLI not available)..."
         DOWNLOAD_URL="https://github.com/$GITHUB_REPO/releases/download/$GITHUB_RELEASE_TAG/seed-dataset.agz"
-        curl -L -o /tmp/seed-dataset.agz "$DOWNLOAD_URL"
-        DATA_FILE="/tmp/seed-dataset.agz"
+        curl -L -o /data/seed-dataset.agz "$DOWNLOAD_URL"
+        DATA_FILE="/data/seed-dataset.agz"
     fi
 fi
 
