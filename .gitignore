@@ -62,3 +62,6 @@ Thumbs.db
 # Misc
 .cache/
 .parcel-cache/
+
+data/seed-dataset.agz
+.mcp.json
