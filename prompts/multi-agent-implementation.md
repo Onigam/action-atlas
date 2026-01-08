@@ -9,7 +9,7 @@ Implement the Action Atlas AI-powered semantic search engine for volunteering ac
 **Repository**: action-atlas (already initialized with git)
 **Current State**: Complete documentation and architecture, zero source code
 **Goal**: Build entire monorepo with working local development environment
-**Timeline**: Follow milestone structure (estimated 6-8 weeks of implementation)
+**Execution**: Multi-agent parallel implementation with sequential phase dependencies
 **Deliverable**: Pull request with complete implementation, updated milestones tracking
 
 ## What Exists
@@ -182,8 +182,9 @@ All agents MUST read and follow these documents:
 
 ## Execution Strategy
 
-### Phase 1: Foundation (Week 1)
+### Phase 1: Foundation
 **Owner**: TypeScript Pro + DevOps Engineer
+**Dependencies**: None (can start immediately)
 
 1. Initialize monorepo
    ```bash
@@ -232,8 +233,9 @@ All agents MUST read and follow these documents:
 - Docker environment verified
 - Ready for implementation
 
-### Phase 2: Shared Packages (Week 1-2)
+### Phase 2: Shared Packages
 **Owner**: TypeScript Pro + Backend Developer
+**Dependencies**: Phase 1 complete (monorepo structure ready)
 
 1. **packages/types/** - Implement domain types
    - `src/domain/activity.ts` - Activity interface, branded ActivityId
@@ -262,8 +264,9 @@ All agents MUST read and follow these documents:
 - Type checking passes
 - Packages can be imported by apps
 
-### Phase 3: Next.js Application Foundation (Week 2-3)
+### Phase 3: Next.js Application Foundation
 **Owner**: Frontend Developer + UI Designer
+**Dependencies**: Phase 1 complete (can run in parallel with Phase 2)
 
 1. Create Next.js 15 app
    ```bash
@@ -323,8 +326,9 @@ All agents MUST read and follow these documents:
 - Basic routing structure
 - Tailwind CSS configured with design tokens
 
-### Phase 4: Search Functionality (Week 3-4)
+### Phase 4: Search Functionality
 **Owner**: Backend Developer + Frontend Developer
+**Dependencies**: Phases 2 & 3 complete (needs packages and Next.js app)
 
 1. **Backend** - Implement /api/search
    - Accept query, location filters, pagination
@@ -353,8 +357,9 @@ All agents MUST read and follow these documents:
 - Sub-200ms search latency (local)
 - Results display with activity cards
 
-### Phase 5: Activity & Organization Pages (Week 4-5)
+### Phase 5: Activity & Organization Pages
 **Owner**: Frontend Developer + Backend Developer
+**Dependencies**: Phase 4 complete (can partially overlap with Phase 4)
 
 1. **Backend** - Activity & Organization APIs
    - GET /api/activities/:id - Fetch single activity
@@ -373,8 +378,9 @@ All agents MUST read and follow these documents:
 - Organization profile pages
 - Navigation between search and details
 
-### Phase 6: Data & Development Scripts (Week 5)
+### Phase 6: Data & Development Scripts
 **Owner**: DevOps Engineer + Backend Developer
+**Dependencies**: Phase 2 complete (needs database package)
 
 1. **Data seeding script**
    ```bash
@@ -420,8 +426,9 @@ All agents MUST read and follow these documents:
 - Indexes created for vector search
 - Scripts documented in README
 
-### Phase 7: Testing & Documentation (Week 6)
+### Phase 7: Testing & Documentation
 **Owner**: All Implementation Agents + Technical Supervisor
+**Dependencies**: Phases 4, 5, 6 complete (all features implemented)
 
 1. **Unit tests**
    - Test shared packages (types, database, ai)
@@ -449,8 +456,9 @@ All agents MUST read and follow these documents:
 - All tests passing
 - Documentation complete and accurate
 
-### Phase 8: Integration & PR (Week 6-7)
+### Phase 8: Integration & PR
 **Owner**: Multi-Agent Coordinator + Technical Supervisor
+**Dependencies**: Phase 7 complete (all tests passing)
 
 1. **Code review**
    - Architect reviews all implementations
