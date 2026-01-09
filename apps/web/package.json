@@ -1,0 +1,45 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.js 15 frontend for Action Atlas",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "test": "vitest run",
+    "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@action-atlas/ai": "workspace:*",
+    "@action-atlas/database": "workspace:*",
+    "@action-atlas/types": "workspace:*",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@tanstack/react-query": "^5.90.16",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "next": "^15.1.0",
+    "nuqs": "^2.8.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.2",
+    "vitest": "^1.2.1"
+  }
+}
