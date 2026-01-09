@@ -52,13 +52,13 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="primary">{categoryLabel}</Badge>
-            {activity.timeCommitment.isFlexible && (
+            {activity.timeCommitment?.isFlexible && (
               <Badge variant="secondary">Flexible Schedule</Badge>
             )}
-            {activity.timeCommitment.isOneTime && (
+            {activity.timeCommitment?.isOneTime && (
               <Badge variant="secondary">One-time</Badge>
             )}
-            {activity.timeCommitment.isRecurring && (
+            {activity.timeCommitment?.isRecurring && (
               <Badge variant="secondary">Recurring</Badge>
             )}
           </div>
@@ -79,11 +79,13 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
             <Building className="h-4 w-4" />
             <span className="hover:underline">View Organization</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <span>{formatLocationShort(activity.location)}</span>
-          </div>
-          {activity.timeCommitment.hoursPerWeek && (
+          {activity.location && (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span>{formatLocationShort(activity.location)}</span>
+            </div>
+          )}
+          {activity.timeCommitment?.hoursPerWeek && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>{activity.timeCommitment.hoursPerWeek} hours/week</span>
@@ -105,7 +107,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       </div>
 
       {/* Skills Required */}
-      {activity.skills.length > 0 && (
+      {activity.skills && activity.skills.length > 0 && (
         <div>
           <h2 className="mb-4 text-2xl font-semibold">Skills</h2>
           <div className="flex flex-wrap gap-2">
@@ -128,7 +130,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       )}
 
       {/* Schedule */}
-      {activity.timeCommitment.schedule && (
+      {activity.timeCommitment?.schedule && (
         <div>
           <h2 className="mb-4 text-2xl font-semibold">Schedule</h2>
           <p className="text-muted-foreground">{activity.timeCommitment.schedule}</p>
@@ -136,40 +138,41 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       )}
 
       {/* Contact Information */}
-      <div className="rounded-xl border bg-card p-6">
-        <h2 className="mb-4 text-2xl font-semibold">Contact Information</h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <div className="font-medium">{activity.contact.name}</div>
-              <div className="text-sm text-muted-foreground">
-                {activity.contact.role}
+      {activity.contact && (
+        <div className="rounded-xl border bg-card p-6">
+          <h2 className="mb-4 text-2xl font-semibold">Contact Information</h2>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <div className="font-medium">{activity.contact.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {activity.contact.role}
+                </div>
+                <a
+                  href={`mailto:${activity.contact.email}`}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {activity.contact.email}
+                </a>
               </div>
-              <a
-                href={`mailto:${activity.contact.email}`}
-                className="text-sm text-primary hover:underline"
-              >
-                {activity.contact.email}
-              </a>
             </div>
-          </div>
 
-          {activity.contact.phone && (
-            <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-muted-foreground" />
-              <a
-                href={`tel:${activity.contact.phone}`}
-                className="text-primary hover:underline"
-              >
-                {activity.contact.phone}
-              </a>
-            </div>
-          )}
+            {activity.contact.phone && (
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-muted-foreground" />
+                <a
+                  href={`tel:${activity.contact.phone}`}
+                  className="text-primary hover:underline"
+                >
+                  {activity.contact.phone}
+                </a>
+              </div>
+            )}
 
-          {activity.website && (
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-muted-foreground" />
+            {activity.website && (
+              <div className="flex items-center gap-3">
+                <Globe className="h-5 w-5 text-muted-foreground" />
               <a
                 href={activity.website}
                 target="_blank"
@@ -178,42 +181,47 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
               >
                 Visit website
               </a>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        <div className="mt-6">
-          <Button size="lg" className="w-full sm:w-auto">
-            Apply Now
-          </Button>
+          <div className="mt-6">
+            <Button size="lg" className="w-full sm:w-auto">
+              Apply Now
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Location Details */}
-      <div>
-        <h2 className="mb-4 text-2xl font-semibold">Location</h2>
-        <div className="rounded-xl border bg-card p-6">
-          <div className="space-y-1 text-sm">
-            {activity.location.address.street && (
-              <p>{activity.location.address.street}</p>
-            )}
-            <p>
-              {activity.location.address.city}
-              {activity.location.address.state &&
-                `, ${activity.location.address.state}`}
-              {activity.location.address.postalCode &&
-                ` ${activity.location.address.postalCode}`}
-            </p>
-            <p>{activity.location.address.country}</p>
-          </div>
-          {/* Map placeholder */}
-          <div className="mt-4 flex h-64 items-center justify-center rounded-lg bg-muted">
-            <p className="text-sm text-muted-foreground">
-              Map view coming soon...
-            </p>
+      {activity.location?.address && (
+        <div>
+          <h2 className="mb-4 text-2xl font-semibold">Location</h2>
+          <div className="rounded-xl border bg-card p-6">
+            <div className="space-y-1 text-sm">
+              {activity.location.address.street && (
+                <p>{activity.location.address.street}</p>
+              )}
+              <p>
+                {activity.location.address.city}
+                {activity.location.address.state &&
+                  `, ${activity.location.address.state}`}
+                {activity.location.address.postalCode &&
+                  ` ${activity.location.address.postalCode}`}
+              </p>
+              {activity.location.address.country && (
+                <p>{activity.location.address.country}</p>
+              )}
+            </div>
+            {/* Map placeholder */}
+            <div className="mt-4 flex h-64 items-center justify-center rounded-lg bg-muted">
+              <p className="text-sm text-muted-foreground">
+                Map view coming soon...
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
