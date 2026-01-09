@@ -1,4 +1,5 @@
 import {
+  connectToDatabase,
   findActivitiesByOrganization,
   findOrganizationById,
   updateOrganization,
@@ -42,6 +43,9 @@ export async function GET(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { id } = await context.params;
     const { searchParams } = new URL(request.url);
 
@@ -126,6 +130,9 @@ export async function PATCH(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { id } = await context.params;
 
     // Parse request body

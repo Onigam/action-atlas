@@ -74,16 +74,26 @@ export function prepareActivityForEmbedding(activity: {
   title: string;
   description: string;
   organization?: { name?: string; mission?: string };
-  skills?: Array<{ name: string }>;
+  skills?: Array<{ name: string }> | string;
   category?: string;
   location?: { address?: { city?: string; country?: string } };
 }): string {
+  // Handle skills - can be array of objects or comma-separated string
+  let skillsText: string | undefined;
+  if (activity.skills) {
+    if (typeof activity.skills === 'string') {
+      skillsText = activity.skills;
+    } else if (Array.isArray(activity.skills)) {
+      skillsText = activity.skills.map((s) => s.name).join(', ');
+    }
+  }
+
   const parts = [
     activity.title,
     activity.description,
     activity.organization?.name,
     activity.organization?.mission,
-    activity.skills?.map((s) => s.name).join(', '),
+    skillsText,
     activity.category,
     activity.location?.address?.city,
     activity.location?.address?.country,

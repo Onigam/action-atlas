@@ -1,5 +1,6 @@
 import { generateEmbedding } from '@action-atlas/ai';
 import {
+  connectToDatabase,
   deleteActivity,
   findActivityById,
   updateActivity,
@@ -35,6 +36,9 @@ export async function GET(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { id } = await context.params;
 
     const activity = await findActivityById(id);
@@ -88,6 +92,9 @@ export async function PATCH(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { id } = await context.params;
 
     // Parse and validate request body
@@ -202,6 +209,9 @@ export async function DELETE(
   context: RouteContext
 ): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { id } = await context.params;
 
     // Check if activity exists
