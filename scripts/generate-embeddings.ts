@@ -31,8 +31,15 @@ import {
   prepareActivityForEmbedding,
 } from '@action-atlas/ai';
 
-// Load environment variables
-config({ path: path.join(process.cwd(), '.env.local') });
+// Load environment variables from root or apps/web
+const rootEnvPath = path.join(process.cwd(), '.env.local');
+const webEnvPath = path.join(process.cwd(), 'apps', 'web', '.env.local');
+
+// Try root first, then fallback to web app
+config({ path: rootEnvPath });
+if (!process.env['OPENAI_API_KEY']) {
+  config({ path: webEnvPath });
+}
 
 interface CliArgs {
   batch: number;
@@ -207,13 +214,19 @@ async function main(): Promise<void> {
           }
 
           try {
-            await updateActivityEmbedding(activity.activityId, embedding);
+            // Use _id as fallback if activityId doesn't exist (for legacy seed data)
+            const id = activity.activityId || activity._id?.toString();
+            if (!id) {
+              throw new Error('Activity has no ID');
+            }
+            await updateActivityEmbedding(id, embedding);
             totalSuccess++;
           } catch (error) {
             totalFailed++;
             if (args.verbose && error instanceof Error) {
+              const activityIdStr = activity.activityId || activity._id?.toString() || 'unknown';
               console.error(
-                chalk.yellow(`Failed to update ${activity.activityId}: ${error.message}`)
+                chalk.yellow(`Failed to update ${activityIdStr}: ${error.message}`)
               );
             }
           }
