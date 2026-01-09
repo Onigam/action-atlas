@@ -24,7 +24,7 @@ export type SearchQuery = z.infer<typeof SearchQuery> & {
 };
 
 export const SearchResult = Activity.extend({
-  relevanceScore: z.number().min(0).max(1),
+  relevanceScore: z.number().min(0).max(1).optional(),
   distance: z.number().optional(), // in meters
 });
 

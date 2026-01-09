@@ -1,8 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import type { SearchResponse } from '@action-atlas/types';
 
-import { searchActivities, type SearchResponse , type SearchFilters } from '@/lib/api-client';
+import { searchActivities, type SearchFilters } from '@/lib/api-client';
 
 import { useDebounce } from './useDebounce';
 

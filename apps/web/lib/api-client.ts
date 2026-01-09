@@ -1,4 +1,4 @@
-import type { Activity, Organization } from '@action-atlas/types';
+import type { Activity, Organization, SearchResponse } from '@action-atlas/types';
 
 import { API_ROUTES } from './constants';
 
@@ -16,22 +16,6 @@ export interface SearchFilters {
   timeCommitment?: string;
   page?: number;
   limit?: number;
-}
-
-/**
- * Search response from API
- */
-export interface SearchResponse {
-  results: (Activity & { relevanceScore?: number; distance?: number })[];
-  total: number;
-  page: number;
-  limit: number;
-  executionTimeMs?: number;
-  metadata?: {
-    cached?: boolean;
-    vectorSearchMs?: number;
-    embeddingMs?: number;
-  };
 }
 
 /**

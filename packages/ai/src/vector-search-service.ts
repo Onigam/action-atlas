@@ -194,6 +194,114 @@ export function buildVectorSearchPipeline(
 }
 
 /**
+ * Calculate cosine similarity between two vectors
+ */
+function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (vecA.length !== vecB.length) {
+    throw new Error('Vectors must have the same length');
+  }
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i]! * vecB[i]!;
+    normA += vecA[i]! * vecA[i]!;
+    normB += vecB[i]! * vecB[i]!;
+  }
+
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+/**
+ * Manual vector search using cosine similarity (fallback for local development)
+ */
+async function manualVectorSearch(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collection: any,
+  options: VectorSearchOptions & { queryVector: Embedding }
+): Promise<ActivityDocument[]> {
+  const {
+    queryVector,
+    limit = 20,
+    category,
+    isActive = true,
+    location,
+  } = options;
+
+  // Build filter
+  const filter: Document = {};
+
+  // Only filter by isActive if it's explicitly set to false
+  // (many legacy documents don't have this field, so we assume they're active)
+  if (isActive === false) {
+    filter['isActive'] = false;
+  }
+
+  if (category) {
+    if (Array.isArray(category)) {
+      filter['category'] = { $in: category };
+    } else {
+      filter['category'] = category;
+    }
+  }
+
+  // Fetch all matching documents with embeddings
+  const documents = await collection
+    .find({ ...filter, embedding: { $exists: true, $ne: null } })
+    .toArray();
+
+  // Calculate similarity scores
+  const scored = documents.map((doc: ActivityDocument) => {
+    if (!doc.embedding) {
+      throw new Error('Document missing embedding');
+    }
+    const similarity = cosineSimilarity(queryVector, doc.embedding);
+    return {
+      ...doc,
+      relevanceScore: similarity,
+    };
+  });
+
+  // Sort by relevance
+  scored.sort((a: { relevanceScore: number }, b: { relevanceScore: number }) => b.relevanceScore - a.relevanceScore);
+
+  // Apply location filtering if needed
+  if (location) {
+    const { latitude, longitude, maxDistance = 50000 } = location;
+
+    const withDistance = scored.map((doc: ActivityDocument & { relevanceScore: number }) => {
+      const docLng = doc.location?.coordinates?.coordinates?.[0] ?? 0;
+      const docLat = doc.location?.coordinates?.coordinates?.[1] ?? 0;
+
+      // Haversine approximation
+      const distance = Math.sqrt(
+        Math.pow(docLng - longitude, 2) + Math.pow(docLat - latitude, 2)
+      ) * 111320; // meters per degree
+
+      return {
+        ...doc,
+        distance,
+        proximityScore: 1 - distance / maxDistance,
+        finalScore: doc.relevanceScore * 0.7 + (1 - distance / maxDistance) * 0.3,
+      };
+    });
+
+    // Filter by distance and re-sort
+    const filtered = withDistance
+      .filter((doc: { distance: number }) => doc.distance <= maxDistance)
+      .sort((a: { finalScore: number }, b: { finalScore: number }) => b.finalScore - a.finalScore)
+      .slice(0, limit);
+
+    return filtered;
+  }
+
+  // Return top results
+  return scored.slice(0, limit);
+}
+
+/**
  * Execute semantic search using MongoDB Vector Search
  *
  * @param collection - MongoDB collection with vector search index
@@ -224,20 +332,40 @@ export async function semanticSearch(
 
   const embeddingMs = Date.now() - embeddingStart;
 
-  // 2. Build and execute vector search pipeline
+  // 2. Execute vector search
   const vectorSearchStart = Date.now();
-  const pipeline = buildVectorSearchPipeline({ ...options, queryVector });
+  let results: any[];
 
-  const results = await collection.aggregate(pipeline).toArray();
+  try {
+    // Try MongoDB Atlas $vectorSearch first
+    const pipeline = buildVectorSearchPipeline({ ...options, queryVector });
+    results = await collection.aggregate(pipeline).toArray();
+  } catch (error) {
+    // Fallback to manual vector search for local development
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('$vectorSearch') || errorMessage.includes('AtlasCLI')) {
+      console.log('[Vector Search] Using manual cosine similarity (local development mode)');
+      results = await manualVectorSearch(collection, { ...options, queryVector });
+    } else {
+      throw error;
+    }
+  }
+
   const vectorSearchMs = Date.now() - vectorSearchStart;
 
   // 3. Post-process results
   const postProcessingStart = Date.now();
-  const searchResults: VectorSearchResult[] = results.map((doc: ActivityDocument & { relevanceScore: number; distance?: number; finalScore?: number }) => ({
-    document: doc,
-    relevanceScore: doc.finalScore ?? doc.relevanceScore,
-    distance: doc.distance,
-  }));
+  const searchResults: VectorSearchResult[] = results.map((doc: ActivityDocument & { relevanceScore: number; distance?: number; finalScore?: number }) => {
+    const result: VectorSearchResult = {
+      document: doc,
+      relevanceScore: doc.finalScore ?? doc.relevanceScore,
+    };
+    if (doc.distance !== undefined) {
+      result.distance = doc.distance;
+    }
+    return result;
+  });
   const postProcessingMs = Date.now() - postProcessingStart;
 
   const executionTimeMs = Date.now() - startTime;

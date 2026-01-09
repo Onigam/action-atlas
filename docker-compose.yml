@@ -15,7 +15,7 @@ services:
       - "27018:27017"
     restart: unless-stopped
     networks:
-      - challenges_vector
+      - action_atlas_vector
     volumes:
       - mongo_vector_data:/data/db
     healthcheck:
@@ -37,10 +37,10 @@ services:
     restart: "no"
     entrypoint: ["bash", "/app-initializer/vector-init.sh"]
     networks:
-      - challenges_vector
+      - action_atlas_vector
 
 networks:
-  challenges_vector:
+  action_atlas_vector:
     driver: bridge
 
 volumes:
