@@ -1,0 +1,32 @@
+{
+  "name": "@action-atlas/database",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MongoDB client and schemas for Action Atlas",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "seed": "tsx src/scripts/seed.ts",
+    "create-indexes": "tsx src/scripts/create-indexes.ts"
+  },
+  "dependencies": {
+    "@action-atlas/types": "workspace:*",
+    "mongodb": "^6.3.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.7.2"
+  }
+}
