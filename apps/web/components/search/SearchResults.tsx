@@ -1,11 +1,11 @@
 'use client';
 
-import type { Activity } from '@action-atlas/types';
+import type { SearchResult } from '@action-atlas/types';
 
 import { ActivityCard } from '@/components/activities/ActivityCard';
 
 export interface SearchResultsProps {
-  results: (Activity & { relevanceScore?: number; distance?: number })[];
+  results: SearchResult[];
   isLoading?: boolean;
   error?: Error | null;
   total?: number;
