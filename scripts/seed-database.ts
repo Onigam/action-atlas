@@ -213,6 +213,88 @@ async function verifySeedData(verbose: boolean): Promise<void> {
   }
 }
 
+async function runDataMigration(verbose: boolean): Promise<void> {
+  // Import the migration logic dynamically to avoid circular dependencies
+  const { transformDocument } = await import('./migrate-legacy-data-lib');
+  const { activities, getDatabase } = await import('@action-atlas/database');
+
+  const collection = activities();
+  const db = getDatabase();
+
+  // Find documents that need migration
+  const query = {
+    $or: [
+      { cuid: { $exists: true }, activityId: { $exists: false } },
+      { name: { $exists: true }, title: { $exists: false } },
+      { charity: { $exists: true }, organizationId: { $exists: false } },
+      { geolocations: { $exists: true }, location: { $exists: false } },
+      { skills: { $type: 'string' } },
+      { timeCommitment: { $exists: false } },
+      { contact: { $exists: false } },
+      { category: { $exists: false } },
+      { searchableText: { $exists: false } },
+    ],
+  };
+
+  const documents = await collection.find(query).toArray();
+
+  if (documents.length === 0) {
+    if (verbose) {
+      console.log(chalk.dim('  No documents need migration'));
+    }
+    return;
+  }
+
+  if (verbose) {
+    console.log(chalk.dim(`  Found ${documents.length} documents to migrate`));
+  }
+
+  let migratedCount = 0;
+  let errorCount = 0;
+
+  for (const doc of documents) {
+    try {
+      const result = transformDocument(doc as any, true); // cleanup legacy fields
+
+      if (Object.keys(result.updates).length === 0 && result.fieldsToUnset.length === 0) {
+        continue;
+      }
+
+      // Build update operation
+      const updateOp: Record<string, any> = { $set: result.updates };
+
+      if (result.fieldsToUnset.length > 0) {
+        const unsetFields: Record<string, string> = {};
+        result.fieldsToUnset.forEach((field) => {
+          unsetFields[field] = '';
+        });
+        updateOp.$unset = unsetFields;
+      }
+
+      // Execute update
+      await collection.updateOne({ _id: doc._id }, updateOp);
+      migratedCount++;
+
+      if (verbose) {
+        console.log(chalk.dim(`  ✓ Migrated: ${doc._id}`));
+      }
+    } catch (error) {
+      errorCount++;
+      if (verbose) {
+        console.log(chalk.dim(`  ✗ Error migrating ${doc._id}`));
+      }
+    }
+  }
+
+  if (verbose || errorCount > 0) {
+    console.log(chalk.dim(`  Migrated: ${migratedCount}, Errors: ${errorCount}`));
+  }
+
+  if (errorCount > 0) {
+    throw new Error(`Migration completed with ${errorCount} errors`);
+  }
+}
+
 async function main(): Promise<void> {
   const args = parseArgs();
 
@@ -286,6 +368,19 @@ async function main(): Promise<void> {
 
     // Verify loaded data
     await verifySeedData(args.verbose);
+
+    // Run data migration to transform legacy data
+    console.log(chalk.blue('\nMigrating legacy data to current schema...'));
+    try {
+      await runDataMigration(args.verbose);
+      console.log(chalk.green('✓ Data migration completed'));
+    } catch (error) {
+      console.error(chalk.yellow('⚠ Data migration encountered errors'));
+      if (error instanceof Error) {
+        console.error(chalk.yellow(error.message));
+      }
+      console.log(chalk.yellow('You can run migration manually with: pnpm migrate-data --execute'));
+    }
 
     console.log(chalk.bold.green('\n✓ Database seeding completed successfully!\n'));
   } catch (error) {

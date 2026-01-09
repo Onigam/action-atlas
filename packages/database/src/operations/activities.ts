@@ -193,6 +193,7 @@ export async function updateActivityEmbedding(
       ],
     };
   } else {
+    // If not a valid ObjectId, assume it's activityId
     filter = { activityId: id };
   }
 
