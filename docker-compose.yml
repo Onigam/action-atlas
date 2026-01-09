@@ -16,10 +16,6 @@ services:
     restart: unless-stopped
     networks:
       - challenges_vector
-      - "27018:27017"
-    restart: unless-stopped
-    networks:
-      - challenges_vector
     volumes:
       - mongo_vector_data:/data/db
     healthcheck:
@@ -37,7 +33,6 @@ services:
       - ./data:/seed-data:ro
     depends_on:
       mongo_vector_main:
-      mongo_vector_main:
         condition: service_healthy
     restart: "no"
     entrypoint: ["bash", "/app-initializer/vector-init.sh"]
@@ -52,9 +47,6 @@ volumes:
   mongo_vector_data:
     driver: local
 
-# NOTE: This uses MongoDB 8.0 which supports vector search via the $vectorSearch
-# aggregation stage. Atlas-specific search indexes require Atlas or Atlas Local CLI.
-# For development, you can use the aggregation pipeline directly with vector embeddings.
 # NOTE: This uses MongoDB 8.0 which supports vector search via the $vectorSearch
 # aggregation stage. Atlas-specific search indexes require Atlas or Atlas Local CLI.
 # For development, you can use the aggregation pipeline directly with vector embeddings.
