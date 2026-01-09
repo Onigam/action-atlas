@@ -1,5 +1,6 @@
 import { generateEmbedding } from '@action-atlas/ai';
 import {
+  connectToDatabase,
   countActivities,
   createActivity,
   findActivities,
@@ -35,6 +36,9 @@ import {
  */
 export async function GET(request: Request): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     const { searchParams } = new URL(request.url);
     const { page, pageSize, offset } = getPaginationParams(searchParams);
 
@@ -102,6 +106,9 @@ export async function GET(request: Request): Promise<NextResponse> {
  */
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
+
     // Parse and validate request body
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const body = await request.json();
