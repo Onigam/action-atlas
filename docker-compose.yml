@@ -1,90 +1,52 @@
-version: '3.9'
+# MongoDB with Vector Search capabilities for Semantic and LLM Search
+# Compatible with macOS (including Apple Silicon)
+# Simplified setup using standard MongoDB with manual vector search
 
 services:
-  # MongoDB 8.2 Community Edition with vector search support
-  mongodb:
-    image: mongodb/mongodb-community-server:8.2.0-ubi9
-    container_name: action-atlas-mongodb
+  mongo_vector_main:
+    container_name: mongo_vector_main
+    image: mongo:8.0
+    command:
+      - mongod
+      - --replSet
+      - vector_search_replica_set
+      - --bind_ip_all
     ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_DATABASE=actionatlas
+      - "27018:27017"
+    restart: unless-stopped
+    networks:
+      - challenges_vector
     volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-      - ./scripts/docker-init:/docker-entrypoint-initdb.d:ro
-    command: --replSet rs0 --bind_ip_all
+      - mongo_vector_data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - action-atlas-network
+      start_period: 40s
 
-  # mongot - MongoDB Search Binary (required for vector search)
-  mongot:
-    image: mongodb/mongodb-community-search:0.53.1
-    container_name: action-atlas-mongot
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - action-atlas-network
-
-  # Init container - Sets up replica set and loads data
-  mongodb-init:
-    image: mongodb/mongodb-community-server:8.2.0-ubi9
-    container_name: action-atlas-init
-    depends_on:
-      mongodb:
-        condition: service_healthy
+  mongo_vector_init:
+    container_name: mongo_vector_init
+    image: mongo:8.0
     volumes:
-      - ./scripts/docker-init:/scripts:ro
-      - ./data:/data:ro
-    command: >
-      bash -c "
-        echo 'Waiting for MongoDB to be ready...'
-        sleep 5
-
-        echo 'Initializing replica set...'
-        mongosh --host mongodb:27017 --eval '
-          rs.initiate({
-            _id: \"rs0\",
-            members: [{ _id: 0, host: \"mongodb:27017\" }]
-          })
-        '
-
-        echo 'Waiting for replica set to be ready...'
-        sleep 10
-
-        echo 'Checking if data already exists...'
-        COUNT=$(mongosh --host mongodb:27017 --quiet --eval 'db.getSiblingDB(\"actionatlas\").activities.countDocuments()' || echo 0)
-
-        if [ \"$COUNT\" -eq \"0\" ]; then
-          echo 'Loading data from GitHub Release or local file...'
-          bash /scripts/load-data.sh
-        else
-          echo 'Data already loaded ($COUNT activities found)'
-        fi
-
-        echo 'Creating vector search index...'
-        bash /scripts/create-vector-index.sh
-
-        echo '✅ MongoDB initialization complete!'
-      "
-    networks:
-      - action-atlas-network
+      - ./scripts/docker-init:/app-initializer:ro
+      - ./data:/seed-data:ro
+    depends_on:
+      mongo_vector_main:
+        condition: service_healthy
     restart: "no"
-
-volumes:
-  mongodb_data:
-    driver: local
-  mongodb_config:
-    driver: local
+    entrypoint: ["bash", "/app-initializer/vector-init.sh"]
+    networks:
+      - challenges_vector
 
 networks:
-  action-atlas-network:
+  challenges_vector:
     driver: bridge
+
+volumes:
+  mongo_vector_data:
+    driver: local
+
+# NOTE: This uses MongoDB 8.0 which supports vector search via the $vectorSearch
+# aggregation stage. Atlas-specific search indexes require Atlas or Atlas Local CLI.
+# For development, you can use the aggregation pipeline directly with vector embeddings.
