@@ -28,6 +28,7 @@
     "seed": "tsx --tsconfig scripts/tsconfig.json scripts/seed-database.ts",
     "generate-embeddings": "tsx --tsconfig scripts/tsconfig.json scripts/generate-embeddings.ts",
     "create-indexes": "tsx --tsconfig scripts/tsconfig.json scripts/create-indexes.ts",
+    "migrate-data": "tsx --tsconfig scripts/tsconfig.json scripts/migrate-legacy-data.ts",
     "db:status": "tsx --tsconfig scripts/tsconfig.json scripts/check-database.ts",
     "db:reset": "tsx --tsconfig scripts/tsconfig.json scripts/reset-database.ts"
   },

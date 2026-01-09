@@ -70,9 +70,19 @@ export function truncate(text: string, maxLength: number): string {
  * Format a location address to a short string
  */
 export function formatLocationShort(location: {
-  address: { city: string; country?: string };
+  address?: { city?: string; country?: string };
 }): string {
+  // Handle missing or malformed location data
+  if (!location?.address) {
+    return 'Location not specified';
+  }
+
   const { city, country } = location.address;
+
+  if (!city) {
+    return 'Location not specified';
+  }
+
   return country ? `${city}, ${country}` : city;
 }
 
