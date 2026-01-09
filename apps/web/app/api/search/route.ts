@@ -1,5 +1,5 @@
 import { semanticSearch, searchQueryToOptions } from '@action-atlas/ai';
-import { activities } from '@action-atlas/database';
+import { activities, connectToDatabase } from '@action-atlas/database';
 import { SearchQuery } from '@action-atlas/types';
 import type { SearchResponse } from '@action-atlas/types';
 import { NextResponse } from 'next/server';
@@ -51,6 +51,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Convert SearchQuery to VectorSearchOptions
     const searchOptions = searchQueryToOptions(searchQuery);
+
+    // CRITICAL: Connect to database first
+    await connectToDatabase();
 
     // Get activities collection
     const activitiesCollection = activities();
