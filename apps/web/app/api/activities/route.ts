@@ -1,0 +1,149 @@
+import { generateEmbedding } from '@action-atlas/ai';
+import {
+  countActivities,
+  createActivity,
+  findActivities,
+} from '@action-atlas/database';
+import { CreateActivityRequest } from '@action-atlas/types';
+import { NextResponse } from 'next/server';
+
+import {
+  getPaginationParams,
+  handleApiError,
+  paginatedResponse,
+  validateRequest,
+} from '@/lib/api-utils';
+
+/**
+ * GET /api/activities - List all activities with pagination and filters
+ *
+ * Query parameters:
+ * - page: number (default 1)
+ * - pageSize: number (default 20, max 100)
+ * - category: string (filter by category)
+ * - organizationId: string (filter by organization)
+ * - isActive: boolean (default true)
+ *
+ * Response:
+ * {
+ *   results: Activity[],
+ *   total: number,
+ *   page: number,
+ *   pageSize: number,
+ *   totalPages: number
+ * }
+ */
+export async function GET(request: Request): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url);
+    const { page, pageSize, offset } = getPaginationParams(searchParams);
+
+    // Build filter
+    const filter: Record<string, unknown> = {};
+
+    // Category filter
+    const category = searchParams.get('category');
+    if (category) {
+      filter['category'] = category;
+    }
+
+    // Organization filter
+    const organizationId = searchParams.get('organizationId');
+    if (organizationId) {
+      filter['organizationId'] = organizationId;
+    }
+
+    // Active filter
+    const isActive = searchParams.get('isActive');
+    if (isActive !== null) {
+      filter['isActive'] = isActive === 'true';
+    } else {
+      // Default to showing only active activities
+      filter['isActive'] = true;
+    }
+
+    // Fetch activities
+    const [results, total] = await Promise.all([
+      findActivities({
+        filter,
+        limit: pageSize,
+        skip: offset,
+        sort: { createdAt: -1 },
+      }),
+      countActivities(filter),
+    ]);
+
+    return paginatedResponse(results, total, page, pageSize);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/**
+ * POST /api/activities - Create a new activity
+ *
+ * Request body:
+ * {
+ *   title: string,
+ *   description: string,
+ *   organizationId: string,
+ *   category: ActivityCategory,
+ *   skills: Array<{ name: string, level?: string }>,
+ *   location: Location,
+ *   timeCommitment: TimeCommitment,
+ *   contact: Contact,
+ *   website?: string
+ * }
+ *
+ * Response:
+ * {
+ *   data: Activity
+ * }
+ */
+export async function POST(request: Request): Promise<NextResponse> {
+  try {
+    // Parse and validate request body
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const body = await request.json();
+    const activityData = validateRequest(CreateActivityRequest, body);
+
+    // Generate searchable text for embedding
+    const searchableText = [
+      activityData.title,
+      activityData.description,
+      activityData.skills.map((s) => s.name).join(', '),
+      activityData.category,
+      activityData.location.address.city,
+      activityData.location.address.country,
+    ]
+      .filter(Boolean)
+      .join('. ');
+
+    // Generate embedding for the activity
+    const { embedding } = await generateEmbedding(searchableText);
+
+    // Create activity with all fields including embedding
+    const activity = await createActivity({
+      ...activityData,
+      searchableText,
+      embedding,
+      embeddingModel: 'text-embedding-3-small',
+      embeddingUpdatedAt: new Date(),
+      isActive: true,
+    });
+
+    return NextResponse.json(
+      {
+        data: activity,
+      },
+      {
+        status: 201,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
