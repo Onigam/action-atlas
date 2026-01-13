@@ -409,8 +409,8 @@ Scripts use `cli-progress` for:
 
 ## Additional Resources
 
-- [CLAUDE.md](/CLAUDE.md) - Project development guide
-- [DOCKER_OPERATIONS.md](/docs/DOCKER_OPERATIONS.md) - Docker operations guide
+- [CLAUDE.md](/docs/governance/CLAUDE.md) - Project development guide
+- [DOCKER_OPERATIONS.md](/docs/operations/docker-operations.md) - Docker operations guide
 - [Database Package](/packages/database/README.md) - Database documentation
 - [AI Package](/packages/ai/README.md) - AI services documentation
 
