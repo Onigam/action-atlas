@@ -17,20 +17,26 @@ export function Navigation() {
 
   return (
     <nav className="hidden md:flex items-center gap-6">
-      {navigationItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={cn(
-            'text-sm font-medium transition-colors hover:text-primary',
-            pathname === item.href
-              ? 'text-foreground'
-              : 'text-muted-foreground'
-          )}
-        >
-          {item.label}
-        </Link>
-      ))}
+      {navigationItems.map((item) => {
+        const isActive = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'text-sm font-medium transition-colors relative',
+              isActive
+                ? 'text-primary-600'
+                : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            {item.label}
+            {isActive && (
+              <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary-600 rounded-full" />
+            )}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

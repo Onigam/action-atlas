@@ -4,21 +4,26 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center justify-center rounded-md border-2 border-black px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-brutal-sm transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
   {
     variants: {
       variant: {
         primary:
-          'border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80',
+          'bg-primary-200 text-primary-800 border-primary-400 hover:bg-primary-300',
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'bg-secondary-100 text-secondary-800 border-secondary-400 hover:bg-secondary-200',
+        accent:
+          'bg-accent-100 text-accent-800 border-accent-400 hover:bg-accent-200',
         destructive:
-          'border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
+          'bg-destructive-500 text-white hover:bg-destructive-600',
         success:
-          'border-transparent bg-success-500 text-white shadow hover:bg-success-600',
+          'bg-success-100 text-success-800 border-success-400 hover:bg-success-200',
         warning:
-          'border-transparent bg-warning-500 text-white shadow hover:bg-accent-600',
-        outline: 'text-foreground',
+          'bg-warning-100 text-warning-800 border-warning-400 hover:bg-warning-200',
+        outline:
+          'bg-white text-black hover:bg-gray-100',
+        ghost:
+          'border-transparent bg-gray-100 text-black shadow-none hover:bg-gray-200',
       },
     },
     defaultVariants: {

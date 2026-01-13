@@ -1,23 +1,19 @@
-# MongoDB with Vector Search capabilities for Semantic and LLM Search
-# Compatible with macOS (including Apple Silicon)
-# Simplified setup using standard MongoDB with manual vector search
-
 services:
   mongo_vector_main:
     container_name: mongo_vector_main
-    image: mongo:8.0
+    image: mongodb/mongodb-community-server:latest
     command:
       - mongod
-      - --replSet
-      - vector_search_replica_set
       - --bind_ip_all
     ports:
       - "27018:27017"
     restart: unless-stopped
     networks:
-      - challenges_vector
+      - action_atlas
     volumes:
       - mongo_vector_data:/data/db
+    environment:
+      - MONGODB_INITDB_DATABASE=actionatlas
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -27,7 +23,7 @@ services:
 
   mongo_vector_init:
     container_name: mongo_vector_init
-    image: mongo:8.0
+    image: mongodb/mongodb-community-server:latest
     volumes:
       - ./scripts/docker-init:/app-initializer:ro
       - ./data:/seed-data:ro
@@ -37,16 +33,12 @@ services:
     restart: "no"
     entrypoint: ["bash", "/app-initializer/vector-init.sh"]
     networks:
-      - challenges_vector
+      - action_atlas
 
 networks:
-  challenges_vector:
+  action_atlas:
     driver: bridge
 
 volumes:
   mongo_vector_data:
     driver: local
-
-# NOTE: This uses MongoDB 8.0 which supports vector search via the $vectorSearch
-# aggregation stage. Atlas-specific search indexes require Atlas or Atlas Local CLI.
-# For development, you can use the aggregation pipeline directly with vector embeddings.

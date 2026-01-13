@@ -11,6 +11,20 @@ const nextConfig: NextConfig = {
   // Disable typed routes for now - experimental feature causing type issues
   // typedRoutes: true,
   outputFileTracingRoot: '../..',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.gra.cloud.ovh.net',
+        pathname: '/**',
+      },
+    ],
+  },
   eslint: {
     // Skip lint during build - will fix in Phase 4
     ignoreDuringBuilds: true,

@@ -2,7 +2,8 @@ import type { Collection, Db } from 'mongodb';
 
 import type { OrganizationDocument } from '@action-atlas/types';
 
-export const ORGANIZATIONS_COLLECTION = 'organizations';
+// Note: Seed data uses 'charities' collection name
+export const ORGANIZATIONS_COLLECTION = 'charities';
 
 export function getOrganizationsCollection(
   db: Db

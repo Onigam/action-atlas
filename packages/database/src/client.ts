@@ -13,6 +13,9 @@ export async function connectToDatabase(): Promise<Db> {
     throw new Error('MONGODB_URI environment variable is not set');
   }
 
+  // Debug: Log the URI being used (masking any credentials)
+  console.log('[Database] Connecting to MongoDB:', uri.replace(/:[^:]*@/, ':****@'));
+
   client = new MongoClient(uri, {
     maxPoolSize: 10,
     minPoolSize: 2,

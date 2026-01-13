@@ -58,28 +58,28 @@ export function SearchBar({
       className={cn('relative flex items-center gap-2', className)}
     >
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
         <Input
           type="text"
           placeholder={placeholder}
           value={query}
           onChange={handleChange}
           autoFocus={autoFocus}
-          className="h-12 pl-10 pr-10 text-lg"
+          className="h-14 pl-12 pr-12 text-base"
           aria-label="Search for volunteering activities"
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-sm p-1 text-gray-600 hover:bg-gray-100 hover:text-black transition-colors"
             aria-label="Clear search"
           >
             <X className="h-5 w-5" />
           </button>
         )}
       </div>
-      <Button type="submit" size="lg" className="h-12">
+      <Button type="submit" size="lg" className="h-14 px-8">
         Search
       </Button>
     </form>
