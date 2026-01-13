@@ -4,6 +4,70 @@ Welcome to the Action Atlas documentation! This directory contains comprehensive
 
 ---
 
+## Documentation Structure
+
+This documentation is organized into focused categories for easy navigation:
+
+### Core Documentation (Root Level)
+- **[Product Vision](./product-vision.md)** - Product goals, target users, and MVP scope
+- **[Technology Stack](./tech-stack.md)** - Complete technology choices with rationale
+- **[System Architecture](./architecture.md)** - System design, data flows, and infrastructure
+- **[Implementation Milestones](./milestones.md)** - Step-by-step implementation plan (9 weeks to MVP)
+- **[Architecture Review Report](./architecture-review-report.md)** - Post-implementation architecture review
+
+### Categorized Documentation
+
+#### [📋 Governance](./governance/)
+Project management, contribution guidelines, and development standards:
+- **[CLAUDE.md](./governance/CLAUDE.md)** - Instructions for AI agents working on the project
+- **[CONTRIBUTING.md](./governance/CONTRIBUTING.md)** - Contribution guidelines and workflow
+- **[MONOREPO_SETUP.md](./governance/MONOREPO_SETUP.md)** - Monorepo structure and package management
+- **[DEFERRED_WORK.md](./governance/DEFERRED_WORK.md)** - Future enhancements and deferred features
+
+#### [📊 Project Status](./project-status/)
+Implementation progress reports and milestone tracking:
+- Phase implementation summaries (Phase 2, 4, 5)
+- Milestone 3 status reports and corrections
+- Executive summaries and progress tracking
+
+#### [🎨 Design System](./design-system/)
+UI/UX design specifications, components, and brand guidelines:
+- **[Design System](./design-system/design-system.md)** - Complete design system specification
+- **[Color Palette](./design-system/color-palette.md)** - Comprehensive color system
+- **[Component Examples](./design-system/component-examples.md)** - UI component implementations
+- **[Design Implementation Guide](./design-system/design-implementation-guide.md)** - Developer guide
+- Additional: Color summaries, design mood board, quick references (see root docs/)
+
+#### [🔌 API Documentation](./api/)
+API endpoints, package documentation, and integration guides:
+- **[API Documentation](./api/api-documentation.md)** - REST API endpoints and usage
+- **[Database Package](./api/database-package.md)** - MongoDB schema and operations
+- **[AI Package](./api/ai-package.md)** - AI services and embeddings
+
+#### [🛠️ Operations](./operations/)
+DevOps, deployment, and operational procedures:
+- **[Docker Operations](./operations/docker-operations.md)** - Container management and deployment
+- **[DevOps Summary](./operations/devops-summary.md)** - Infrastructure and deployment overview
+
+#### [⚙️ Development Setup](./development-setup/)
+Local development environment configuration:
+- **[README](./development-setup/README.md)** - Setup overview
+- **[Docker Local Setup](./development-setup/docker-local-setup.md)** - Docker-based development
+- **[Data Management](./development-setup/data-management.md)** - Database seeding and management
+- **[Alternatives](./development-setup/alternatives.md)** - Alternative setup approaches
+
+#### [📝 Architecture Decision Records](./adr/)
+Key technology decisions with context and rationale:
+- **[ADR-001](./adr/001-mongodb-atlas-vector-search.md)** - MongoDB Atlas Vector Search
+- **[ADR-002](./adr/002-vercel-ai-sdk-over-langchain.md)** - Vercel AI SDK over Langchain
+
+#### [💡 Prompts](./prompts/)
+Prompt engineering and AI agent instructions:
+- Multi-agent implementation strategies
+- Prompt templates and examples
+
+---
+
 ## Quick Links
 
 - **[Product Vision](./product-vision.md)** - Product goals, target users, and MVP scope
@@ -106,34 +170,69 @@ Each milestone includes:
 
 ```
 action-atlas/
-├── docs/                           # This directory
-│   ├── README.md                   # This file
-│   ├── product-vision.md           # Product goals and scope
-│   ├── tech-stack.md               # Technology decisions
-│   ├── architecture.md             # System architecture
-│   ├── milestones.md               # Implementation plan
-│   └── adr/                        # Architecture Decision Records
-│       ├── 001-mongodb-atlas-vector-search.md
-│       └── 002-vercel-ai-sdk-over-langchain.md
+├── docs/                                # This directory
+│   ├── README.md                        # This file
+│   ├── product-vision.md                # Product goals and scope
+│   ├── tech-stack.md                    # Technology decisions
+│   ├── architecture.md                  # System architecture
+│   ├── milestones.md                    # Implementation plan
+│   ├── architecture-review-report.md    # Architecture review
+│   │
+│   ├── governance/                      # Project governance
+│   │   ├── CLAUDE.md                    # AI agent instructions
+│   │   ├── CONTRIBUTING.md              # Contribution guidelines
+│   │   ├── MONOREPO_SETUP.md            # Monorepo configuration
+│   │   └── DEFERRED_WORK.md             # Future enhancements
+│   │
+│   ├── project-status/                  # Implementation reports
+│   │   ├── phase-*-implementation-summary.md
+│   │   └── milestone-*-status.md
+│   │
+│   ├── design-system/                   # UI/UX specifications
+│   │   ├── design-system.md             # Main design system
+│   │   ├── color-palette.md             # Color specifications
+│   │   ├── component-examples.md        # UI components
+│   │   └── design-implementation-guide.md
+│   │
+│   ├── api/                             # API documentation
+│   │   ├── api-documentation.md         # REST API endpoints
+│   │   ├── database-package.md          # Database operations
+│   │   └── ai-package.md                # AI services
+│   │
+│   ├── operations/                      # DevOps documentation
+│   │   ├── docker-operations.md         # Container management
+│   │   └── devops-summary.md            # Infrastructure overview
+│   │
+│   ├── development-setup/               # Local setup guides
+│   │   ├── README.md                    # Setup overview
+│   │   ├── docker-local-setup.md        # Docker development
+│   │   └── data-management.md           # Database management
+│   │
+│   ├── adr/                             # Architecture Decision Records
+│   │   ├── 001-mongodb-atlas-vector-search.md
+│   │   └── 002-vercel-ai-sdk-over-langchain.md
+│   │
+│   └── prompts/                         # Prompt engineering
+│       └── multi-agent-implementation.md
 │
 ├── apps/
-│   └── web/                        # Next.js 15 frontend
-│       ├── app/                    # App Router
-│       ├── components/             # React components
-│       └── lib/                    # Utilities
+│   └── web/                             # Next.js 15 frontend
+│       ├── app/                         # App Router
+│       ├── components/                  # React components
+│       └── lib/                         # Utilities
 │
 ├── packages/
-│   ├── types/                      # Shared TypeScript types
-│   ├── database/                   # MongoDB schemas and client
-│   ├── ai/                         # AI services (embeddings, vector search)
-│   └── config/                     # Shared configurations
+│   ├── types/                           # Shared TypeScript types
+│   ├── database/                        # MongoDB schemas and client
+│   ├── ai/                              # AI services (embeddings, vector search)
+│   └── config/                          # Shared configurations
 │
-├── scripts/                        # Utility scripts
-│   ├── seed.ts                     # Database seeding
-│   └── generate-embeddings.ts     # Batch embedding generation
+├── scripts/                             # Utility scripts
+│   ├── seed.ts                          # Database seeding
+│   └── generate-embeddings.ts           # Batch embedding generation
 │
-├── turbo.json                      # Turborepo configuration
-└── package.json                    # Root workspace
+├── turbo.json                           # Turborepo configuration
+└── package.json                         # Root workspace
 ```
 
 ---
@@ -259,19 +358,24 @@ pnpm dev
 - Review [Architecture](./architecture.md) for system design questions
 - Review [Milestones](./milestones.md) for implementation questions
 - Check [ADRs](./adr/) for technology decision context
+- See [Development Setup](./development-setup/) for environment configuration
+- Check [Project Status](./project-status/) for current progress
 
 ### For Contributions
-1. Read the documentation to understand the system
-2. Follow the TypeScript patterns in existing code
-3. Add tests for new functionality
-4. Update documentation if changing architecture
-5. Create ADR for significant technical decisions
+1. Read [CONTRIBUTING.md](./governance/CONTRIBUTING.md) for contribution guidelines
+2. Review [Monorepo Setup](./governance/MONOREPO_SETUP.md) for package structure
+3. Follow the TypeScript patterns in existing code
+4. Add tests for new functionality
+5. Update documentation if changing architecture
+6. Create ADR for significant technical decisions
 
 ### For AI Agents
+- Start with [CLAUDE.md](./governance/CLAUDE.md) for AI-specific instructions
 - Prioritize type safety and clarity
 - Follow patterns in [Architecture](./architecture.md)
 - Update [Milestones](./milestones.md) as you complete tasks
 - Document significant decisions as new ADRs
+- Check [Deferred Work](./governance/DEFERRED_WORK.md) before implementing new features
 
 ---
 
@@ -290,14 +394,30 @@ pnpm dev
 
 ## Next Steps
 
-1. **Start with Milestone 1**: [Foundation & Infrastructure Setup](./milestones.md#milestone-1-foundation--infrastructure-setup)
-2. **Set up development environment**: MongoDB, Redis, environment variables
-3. **Create monorepo structure**: Follow [Architecture](./architecture.md#monorepo-structure)
-4. **Implement shared types package**: See [Milestone 1.3](./milestones.md#13-shared-types-package)
-5. **Set up Next.js application**: See [Milestone 4](./milestones.md#milestone-4-nextjs-frontend-foundation)
+1. **Review project status**: Check [Project Status](./project-status/) for current progress
+2. **Set up development environment**: Follow [Development Setup](./development-setup/)
+3. **Understand the architecture**: Read [Architecture](./architecture.md) and [ADRs](./adr/)
+4. **Check implementation milestones**: Review [Milestones](./milestones.md) for remaining tasks
+5. **Review deferred work**: See [Deferred Work](./governance/DEFERRED_WORK.md) for future enhancements
+6. **Contribute**: Follow [CONTRIBUTING.md](./governance/CONTRIBUTING.md) guidelines
+
+## Finding Documentation
+
+**New to the project?** Start here:
+1. [Product Vision](./product-vision.md) - Understand what we're building
+2. [Technology Stack](./tech-stack.md) - Learn about our tech choices
+3. [Architecture](./architecture.md) - See how it all fits together
+4. [Development Setup](./development-setup/) - Get your environment ready
+
+**Looking for specific information?**
+- Design & UI: [Design System](./design-system/)
+- API details: [API Documentation](./api/)
+- Deployment: [Operations](./operations/)
+- Progress: [Project Status](./project-status/)
+- Contributing: [Governance](./governance/)
 
 ---
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-13
 **Maintained By**: Development Team + AI Agents
 **License**: [To be determined]
