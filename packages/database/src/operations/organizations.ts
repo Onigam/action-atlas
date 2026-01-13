@@ -39,7 +39,7 @@ export async function findOrganizationById(
 ): Promise<OrganizationDocument | null> {
   const collection = organizations();
 
-  // Try both MongoDB ObjectId and business organizationId
+  // Try MongoDB ObjectId, business organizationId, and legacy cuid
   let filter: Filter<OrganizationDocument>;
 
   if (ObjectId.isValid(id)) {
@@ -47,10 +47,16 @@ export async function findOrganizationById(
       $or: [
         { _id: new ObjectId(id) },
         { organizationId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { organizationId: id };
+    filter = {
+      $or: [
+        { organizationId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   return await collection.findOne(filter);
@@ -133,10 +139,16 @@ export async function updateOrganization(
       $or: [
         { _id: new ObjectId(id) },
         { organizationId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { organizationId: id };
+    filter = {
+      $or: [
+        { organizationId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   const updateDoc: UpdateFilter<OrganizationDocument> = {
@@ -168,10 +180,16 @@ export async function updateOrganizationStatus(
       $or: [
         { _id: new ObjectId(id) },
         { organizationId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { organizationId: id };
+    filter = {
+      $or: [
+        { organizationId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   const updateDoc: UpdateFilter<OrganizationDocument> = {
@@ -200,10 +218,16 @@ export async function deleteOrganization(id: string): Promise<boolean> {
       $or: [
         { _id: new ObjectId(id) },
         { organizationId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { organizationId: id };
+    filter = {
+      $or: [
+        { organizationId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   const result = await collection.deleteOne(filter);
@@ -256,10 +280,16 @@ export async function bulkUpdateOrganizations(
         $or: [
           { _id: new ObjectId(id) },
           { organizationId: id },
+          { cuid: id },
         ],
       };
     } else {
-      filter = { organizationId: id };
+      filter = {
+        $or: [
+          { organizationId: id },
+          { cuid: id },
+        ],
+      };
     }
 
     return {

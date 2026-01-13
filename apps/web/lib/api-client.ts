@@ -16,6 +16,7 @@ export interface SearchFilters {
   timeCommitment?: string;
   page?: number;
   limit?: number;
+  offset?: number;
 }
 
 /**

@@ -69,21 +69,28 @@ export function truncate(text: string, maxLength: number): string {
 /**
  * Format a location address to a short string
  */
-export function formatLocationShort(location: {
-  address?: { city?: string; country?: string };
-}): string {
-  // Handle missing or malformed location data
-  if (!location?.address) {
-    return 'Location not specified';
+export function formatLocationShort(location: any): string {
+  // Handle new structure: { address: { city, country } }
+  if (location?.address?.city) {
+    const { city, country } = location.address;
+    return country ? `${city}, ${country}` : city;
   }
 
-  const { city, country } = location.address;
-
-  if (!city) {
-    return 'Location not specified';
+  // Handle legacy seed data: string location
+  if (typeof location === 'string') {
+    // Format: "france - paris,france" -> "Paris, France"
+    const parts = location.split(' - ');
+    if (parts.length > 1 && parts[1]) {
+      return parts[1]
+        .split(',')
+        .map(s => s.trim())
+        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(', ');
+    }
+    return location;
   }
 
-  return country ? `${city}, ${country}` : city;
+  return 'Location not specified';
 }
 
 /**
