@@ -335,3 +335,115 @@ export async function bulkUpdateActivities(
   const result = await collection.bulkWrite(bulkOps);
   return result.modifiedCount;
 }
+
+/**
+ * GeoNear result with distance
+ */
+export interface ActivityWithDistance extends ActivityDocument {
+  distance: number; // Distance in meters from the query point
+}
+
+/**
+ * Find activities by IDs with geo-proximity sorting using MongoDB $geoNear
+ *
+ * This function takes a list of activity IDs (e.g., from semantic search)
+ * and re-orders them by geographic proximity to a given point.
+ *
+ * @param activityIds - Array of activityId strings to filter
+ * @param coordinates - [longitude, latitude] tuple (GeoJSON format)
+ * @param maxDistance - Maximum distance in meters (default: 50km)
+ * @returns Activities sorted by distance from the given coordinates
+ */
+export async function findActivitiesByIdsWithGeoNear(
+  activityIds: string[],
+  coordinates: [number, number],
+  maxDistance: number = 50000
+): Promise<ActivityWithDistance[]> {
+  const collection = activities();
+
+  // Build aggregation pipeline with $geoNear
+  const pipeline = [
+    {
+      $geoNear: {
+        near: {
+          type: 'Point' as const,
+          coordinates, // [longitude, latitude]
+        },
+        distanceField: 'distance',
+        maxDistance, // in meters
+        spherical: true,
+        query: {
+          activityId: { $in: activityIds },
+          isActive: { $ne: false }, // Include documents without isActive field (legacy)
+        },
+      },
+    },
+    {
+      $sort: { distance: 1 as const },
+    },
+  ];
+
+  try {
+    const results = await collection.aggregate<ActivityWithDistance>(pipeline).toArray();
+    return results;
+  } catch (error) {
+    // If $geoNear fails (e.g., no 2dsphere index or local MongoDB), fall back to simple query
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('$geoNear') || errorMessage.includes('2dsphere')) {
+      console.log('[GeoNear] Falling back to manual distance calculation (no 2dsphere index)');
+
+      // Fetch activities by IDs
+      const activitiesData = await collection
+        .find({
+          activityId: { $in: activityIds },
+          isActive: { $ne: false },
+        })
+        .toArray();
+
+      // Calculate distances manually and sort
+      const [queryLng, queryLat] = coordinates;
+      const withDistance = activitiesData.map((activity) => {
+        const actLng = activity.location?.coordinates?.coordinates?.[0] ?? 0;
+        const actLat = activity.location?.coordinates?.coordinates?.[1] ?? 0;
+
+        // Haversine approximation (good enough for sorting)
+        const distance = Math.sqrt(
+          Math.pow((actLng - queryLng) * Math.cos((queryLat * Math.PI) / 180), 2) +
+            Math.pow(actLat - queryLat, 2)
+        ) * 111320; // meters per degree
+
+        return {
+          ...activity,
+          distance,
+        } as ActivityWithDistance;
+      });
+
+      // Filter by maxDistance and sort
+      return withDistance
+        .filter((a) => a.distance <= maxDistance)
+        .sort((a, b) => a.distance - b.distance);
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Find activities by IDs without geo-proximity sorting
+ *
+ * @param activityIds - Array of activityId strings to filter
+ * @returns Activities matching the given IDs
+ */
+export async function findActivitiesByIds(
+  activityIds: string[]
+): Promise<ActivityDocument[]> {
+  const collection = activities();
+
+  return collection
+    .find({
+      activityId: { $in: activityIds },
+      isActive: { $ne: false },
+    })
+    .toArray();
+}
