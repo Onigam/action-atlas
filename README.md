@@ -66,12 +66,10 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 - **OpenAI** (text-embedding-3-small for embeddings)
 
 ### Infrastructure
-- **Vercel / Railway** (Hosting, CDN, Edge Functions)
-  - Vercel: Optimized for Next.js with Edge Functions
-  - Railway: Alternative deployment platform with automated CI/CD
+- **Railway** (Hosting and automated CI/CD via GitHub Actions)
 - **MongoDB Atlas** (M0 free tier → M10 $57/month)
 - **Upstash Redis** (Caching and rate limiting)
-- **GitHub Actions** (CI/CD, automated deployments)
+- **GitHub Actions** (CI/CD, automated deployments to Railway)
 - **Sentry** (Error tracking)
 
 ### Development
@@ -92,7 +90,7 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 - **pnpm 8+** ([Install pnpm](https://pnpm.io/installation))
 - **MongoDB Atlas account** ([Free tier](https://www.mongodb.com/cloud/atlas/register))
 - **OpenAI API key** ([Get API key](https://platform.openai.com/api-keys))
-- **Vercel account** (Optional, for deployment)
+- **Railway account** (For production deployment, [Sign up](https://railway.app))
 
 ### Installation
 
@@ -143,14 +141,13 @@ pnpm build
 
 # Run production build locally
 pnpm start
-
-# Deploy to Vercel (after linking project)
-vercel --prod
-
-# Deploy to Railway (automated via GitHub Actions)
-# Deployment happens automatically when pushing to main branch
-# See .github/RAILWAY_SETUP.md for configuration details
 ```
+
+**Automated Deployment to Railway:**
+- Deployment happens automatically when pushing to the `main` branch
+- GitHub Actions workflow handles: validation → build → test → deploy
+- See `.github/RAILWAY_SETUP.md` for setup instructions
+- Configure GitHub secrets before your first deployment
 
 ---
 
@@ -225,13 +222,10 @@ pnpm seed                   # Seed database with sample data
 pnpm generate-embeddings    # Generate embeddings for activities
 pnpm create-indexes         # Create MongoDB indexes
 
-# Deployment
-vercel                      # Deploy preview to Vercel
-vercel --prod               # Deploy to production
-
-# Railway deployment (automated via GitHub Actions)
-# Push to main branch triggers automatic deployment
-# See .github/RAILWAY_SETUP.md for setup instructions
+# Deployment (automated via GitHub Actions)
+git push origin main        # Push to main triggers Railway deployment
+# See .github/RAILWAY_SETUP.md for configuration
+# See .github/workflows/deploy-railway.yml for workflow details
 ```
 
 ---
@@ -288,18 +282,18 @@ See [docs/architecture.md](./docs/architecture.md) for detailed architecture dia
 
 | Service | Tier | Monthly Cost |
 |---------|------|--------------|
-| Vercel | Free | $0 |
+| Railway | Hobby Plan | $5 |
 | MongoDB Atlas | M0 Sandbox | $0 |
 | OpenAI API | Pay-as-you-go | $5-10 |
-| GitHub Actions | Free | $0 |
+| GitHub Actions | Free (2,000 min/month) | $0 |
 | Sentry | Free (5K errors) | $0 |
-| **Total** | | **$6-12/month** |
+| **Total** | | **$10-15/month** |
 
 ### Production Scale (10K searches/day)
 
 | Service | Tier | Monthly Cost |
 |---------|------|--------------|
-| Vercel | Pro | $20 |
+| Railway | Pro Plan | $20 |
 | MongoDB Atlas | M10 (10GB) | $57 |
 | OpenAI API | Pay-as-you-go | $30-50 |
 | Sentry | Team | $26 |
@@ -388,10 +382,11 @@ This codebase is optimized for AI agent development:
 
 - **Rate Limiting**: 20 requests/minute per IP (Upstash Rate Limit)
 - **Input Validation**: Zod schemas on all API endpoints
-- **Secrets Management**: Vercel Environment Variables (encrypted)
+- **Secrets Management**: GitHub Secrets (encrypted) + Railway Environment Variables
 - **API Keys**: Never committed to repository
-- **HTTPS**: Automatic SSL via Vercel
+- **HTTPS**: Automatic SSL via Railway
 - **Security Headers**: X-Frame-Options, CSP, etc.
+- **Deployment Security**: Secret validation before deployment, production environment protection
 
 ---
 
@@ -403,7 +398,8 @@ To be determined. This project is currently in active development.
 
 ## 🙏 Acknowledgments
 
-- **Vercel** - For the excellent AI SDK and hosting platform
+- **Vercel** - For the excellent AI SDK
+- **Railway** - For simplified deployment and hosting platform
 - **MongoDB** - For Atlas Vector Search capabilities
 - **OpenAI** - For powerful embedding models
 
