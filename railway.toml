@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm install --frozen-lockfile && pnpm build --filter=web"
+
+[deploy]
+startCommand = "cd apps/web && pnpm start"
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
+
+[env]
+NODE_ENV = "production"
+PORT = "3000"
