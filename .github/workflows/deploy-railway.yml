@@ -16,6 +16,21 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      - name: Set Railway Environment Variables
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway variables --set MONGODB_URI="${{ secrets.MONGODB_URI }}"
+          railway variables --set OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+          railway variables --set GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}"
+          railway variables --set REDIS_URL="${{ secrets.REDIS_URL }}"
+          railway variables --set NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
+          railway variables --set NODE_ENV="production"
+          railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}"
+          railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}"
+          railway variables --set LOG_LEVEL="${{ secrets.LOG_LEVEL || 'info' }}"
+          railway variables --set RATE_LIMIT_RPM="${{ secrets.RATE_LIMIT_RPM || '20' }}"
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
