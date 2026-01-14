@@ -95,6 +95,15 @@ jobs:
       - name: Set Railway Environment Variables
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ENABLE_SEARCH: ${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}
+          NEXT_PUBLIC_ENABLE_GEOSPATIAL: ${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL || 'info' }}
+          RATE_LIMIT_RPM: ${{ secrets.RATE_LIMIT_RPM || '20' }}
         run: |
           set +x  # Disable command echoing for security
 
@@ -110,16 +119,6 @@ jobs:
           railway variables --set RATE_LIMIT_RPM="$RATE_LIMIT_RPM" --environment production
 
           echo "✅ Environment variables configured"
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_ENABLE_SEARCH: ${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}
-          NEXT_PUBLIC_ENABLE_GEOSPATIAL: ${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}
-          LOG_LEVEL: ${{ secrets.LOG_LEVEL || 'info' }}
-          RATE_LIMIT_RPM: ${{ secrets.RATE_LIMIT_RPM || '20' }}
 
       - name: Deploy to Railway
         id: deploy
