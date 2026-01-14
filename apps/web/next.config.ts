@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Standalone output for Railway deployment
+  output: 'standalone',
   transpilePackages: [
     '@action-atlas/types',
     '@action-atlas/database',
