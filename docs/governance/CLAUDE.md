@@ -309,9 +309,15 @@ NODE_ENV=development
 
 ## Deployment
 
-- **Hosting**: Vercel (production and preview deployments)
+- **Hosting**: Vercel / Railway (production and preview deployments)
+  - **Vercel**: Primary deployment platform, optimized for Next.js with Edge Functions
+  - **Railway**: Alternative deployment with automated CI/CD via GitHub Actions
+  - Deployment choice depends on project requirements and preferences
 - **Database**: MongoDB Atlas (M0 free tier for MVP, M10 for production)
-- **CI/CD**: GitHub Actions (lint, test, type-check before deploy)
+- **CI/CD**: GitHub Actions (lint, test, type-check, build before deploy)
+  - Automated Railway deployments trigger on push to main branch
+  - See `.github/RAILWAY_SETUP.md` for Railway configuration
+  - See `.github/workflows/deploy-railway.yml` for deployment workflow
 - **Monitoring**: Vercel Analytics, Sentry (error tracking)
 
 See `README.md` for detailed deployment instructions.
