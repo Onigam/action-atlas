@@ -66,10 +66,12 @@ Comprehensive documentation is available in the [`docs/`](./docs) directory:
 - **OpenAI** (text-embedding-3-small for embeddings)
 
 ### Infrastructure
-- **Vercel** (Hosting, CDN, Edge Functions)
+- **Vercel / Railway** (Hosting, CDN, Edge Functions)
+  - Vercel: Optimized for Next.js with Edge Functions
+  - Railway: Alternative deployment platform with automated CI/CD
 - **MongoDB Atlas** (M0 free tier → M10 $57/month)
 - **Upstash Redis** (Caching and rate limiting)
-- **GitHub Actions** (CI/CD)
+- **GitHub Actions** (CI/CD, automated deployments)
 - **Sentry** (Error tracking)
 
 ### Development
@@ -144,6 +146,10 @@ pnpm start
 
 # Deploy to Vercel (after linking project)
 vercel --prod
+
+# Deploy to Railway (automated via GitHub Actions)
+# Deployment happens automatically when pushing to main branch
+# See .github/RAILWAY_SETUP.md for configuration details
 ```
 
 ---
@@ -222,6 +228,10 @@ pnpm create-indexes         # Create MongoDB indexes
 # Deployment
 vercel                      # Deploy preview to Vercel
 vercel --prod               # Deploy to production
+
+# Railway deployment (automated via GitHub Actions)
+# Push to main branch triggers automatic deployment
+# See .github/RAILWAY_SETUP.md for setup instructions
 ```
 
 ---

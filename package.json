@@ -30,9 +30,11 @@
     "create-indexes": "tsx --tsconfig scripts/tsconfig.json scripts/create-indexes.ts",
     "migrate-data": "tsx --tsconfig scripts/tsconfig.json scripts/migrate-legacy-data.ts",
     "db:status": "tsx --tsconfig scripts/tsconfig.json scripts/check-database.ts",
-    "db:reset": "tsx --tsconfig scripts/tsconfig.json scripts/reset-database.ts"
+    "db:reset": "tsx --tsconfig scripts/tsconfig.json scripts/reset-database.ts",
+    "convert-draftjs": "tsx --tsconfig scripts/tsconfig.json scripts/convert-draftjs-to-markdown.ts"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/cli-progress": "^3.11.6",
     "@types/node": "^20.11.5",
     "@typescript-eslint/eslint-plugin": "^6.19.1",

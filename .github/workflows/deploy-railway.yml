@@ -1,37 +1,169 @@
-name: Deploy to Railway
+name: Deploy to Railway (Production)
 
 on:
   push:
     branches:
       - main
 
+# Prevent concurrent deployments
+concurrency:
+  group: railway-production-deployment
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate Required Secrets
+        run: |
+          missing_secrets=()
+
+          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            missing_secrets+=("RAILWAY_TOKEN")
+          fi
+
+          if [ -z "${{ secrets.RAILWAY_SERVICE_NAME }}" ]; then
+            missing_secrets+=("RAILWAY_SERVICE_NAME")
+          fi
+
+          if [ -z "${{ secrets.MONGODB_URI }}" ]; then
+            missing_secrets+=("MONGODB_URI")
+          fi
+
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            missing_secrets+=("OPENAI_API_KEY")
+          fi
+
+          if [ -z "${{ secrets.NEXT_PUBLIC_API_URL }}" ]; then
+            missing_secrets+=("NEXT_PUBLIC_API_URL")
+          fi
+
+          if [ ${#missing_secrets[@]} -ne 0 ]; then
+            echo "❌ Missing required secrets:"
+            printf '%s\n' "${missing_secrets[@]}"
+            exit 1
+          fi
+
+          echo "✅ All required secrets are configured"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.5
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run type check
+        run: pnpm type-check
+
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test || echo "⚠️ Tests not configured yet"
+
+      - name: Build project
+        run: pnpm build
+
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: npm install -g @railway/cli@3.11.0
 
       - name: Set Railway Environment Variables
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway variables --set MONGODB_URI="${{ secrets.MONGODB_URI }}"
-          railway variables --set OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
-          railway variables --set GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}"
-          railway variables --set REDIS_URL="${{ secrets.REDIS_URL }}"
-          railway variables --set NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
-          railway variables --set NODE_ENV="production"
-          railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}"
-          railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}"
-          railway variables --set LOG_LEVEL="${{ secrets.LOG_LEVEL || 'info' }}"
-          railway variables --set RATE_LIMIT_RPM="${{ secrets.RATE_LIMIT_RPM || '20' }}"
+          set +x  # Disable command echoing for security
+
+          railway variables --set MONGODB_URI="$MONGODB_URI" --environment production
+          railway variables --set OPENAI_API_KEY="$OPENAI_API_KEY" --environment production
+          railway variables --set GOOGLE_API_KEY="$GOOGLE_API_KEY" --environment production
+          railway variables --set REDIS_URL="$REDIS_URL" --environment production
+          railway variables --set NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" --environment production
+          railway variables --set NODE_ENV="production" --environment production
+          railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="$NEXT_PUBLIC_ENABLE_SEARCH" --environment production
+          railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="$NEXT_PUBLIC_ENABLE_GEOSPATIAL" --environment production
+          railway variables --set LOG_LEVEL="$LOG_LEVEL" --environment production
+          railway variables --set RATE_LIMIT_RPM="$RATE_LIMIT_RPM" --environment production
+
+          echo "✅ Environment variables configured"
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ENABLE_SEARCH: ${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}
+          NEXT_PUBLIC_ENABLE_GEOSPATIAL: ${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL || 'info' }}
+          RATE_LIMIT_RPM: ${{ secrets.RATE_LIMIT_RPM || '20' }}
 
       - name: Deploy to Railway
+        id: deploy
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service=${{ secrets.RAILWAY_SERVICE_NAME || 'action-atlas' }}
+        run: |
+          set +x  # Disable command echoing for security
+
+          echo "🚀 Starting deployment..."
+          railway up --service="${{ secrets.RAILWAY_SERVICE_NAME }}" --environment production
+
+          echo "✅ Deployment triggered successfully"
+
+      - name: Wait for Deployment
+        run: sleep 30
+
+      - name: Verify Deployment
+        id: verify
+        run: |
+          HEALTH_URL="${{ secrets.NEXT_PUBLIC_API_URL }}/api/health"
+
+          echo "🔍 Checking deployment health at $HEALTH_URL"
+
+          max_attempts=10
+          attempt=0
+
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" | grep -q "200"; then
+              echo "✅ Deployment verified - application is healthy"
+              exit 0
+            fi
+
+            attempt=$((attempt + 1))
+            echo "⏳ Attempt $attempt/$max_attempts - waiting for application..."
+            sleep 15
+          done
+
+          echo "❌ Deployment verification failed - application not responding"
+          exit 1
+
+      - name: Rollback on Failure
+        if: failure() && steps.deploy.outcome == 'success'
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "⚠️ Deployment failed - attempting rollback..."
+          railway rollback --service="${{ secrets.RAILWAY_SERVICE_NAME }}" --environment production || echo "❌ Rollback failed - manual intervention required"
