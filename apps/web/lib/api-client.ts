@@ -20,6 +20,29 @@ export interface SearchFilters {
 }
 
 /**
+ * Transform client-side filters to API format
+ */
+function transformFiltersForApi(filters?: SearchFilters): Record<string, unknown> {
+  if (!filters) return {};
+
+  const { location, ...rest } = filters;
+
+  // Transform location to API format (lat/lng -> latitude/longitude, maxDistance -> radius)
+  if (location) {
+    return {
+      ...rest,
+      location: {
+        latitude: location.lat,
+        longitude: location.lng,
+        radius: location.maxDistance,
+      },
+    };
+  }
+
+  return rest;
+}
+
+/**
  * API error response
  */
 export interface ApiError {
@@ -99,9 +122,10 @@ export async function searchActivities(
   query: string,
   filters?: SearchFilters
 ): Promise<SearchResponse> {
+  const transformedFilters = transformFiltersForApi(filters);
   return fetchApi<SearchResponse>(API_ROUTES.SEARCH, {
     method: 'POST',
-    body: JSON.stringify({ query, ...filters }),
+    body: JSON.stringify({ query, ...transformedFilters }),
   });
 }
 
