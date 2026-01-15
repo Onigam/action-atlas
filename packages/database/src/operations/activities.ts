@@ -4,6 +4,7 @@ import type { Filter, FindOptions, UpdateFilter } from 'mongodb';
 import type { Activity, ActivityDocument } from '@action-atlas/types';
 
 import { activities } from '../collections';
+import { calculateHaversineDistance, isValidCoordinates } from '../utils/geo';
 
 export interface FindActivitiesOptions {
   filter?: Filter<ActivityDocument>;
@@ -403,21 +404,25 @@ export async function findActivitiesByIdsWithGeoNear(
 
       // Calculate distances manually and sort
       const [queryLng, queryLat] = coordinates;
-      const withDistance = activitiesData.map((activity) => {
-        const actLng = activity.location?.coordinates?.coordinates?.[0] ?? 0;
-        const actLat = activity.location?.coordinates?.coordinates?.[1] ?? 0;
+      const withDistance = activitiesData
+        .filter((activity) => {
+          // Filter out activities without valid coordinates
+          const actLng = activity.location?.coordinates?.coordinates?.[0];
+          const actLat = activity.location?.coordinates?.coordinates?.[1];
+          return isValidCoordinates(actLat, actLng);
+        })
+        .map((activity) => {
+          const actLng = activity.location!.coordinates!.coordinates![0];
+          const actLat = activity.location!.coordinates!.coordinates![1];
 
-        // Haversine approximation (good enough for sorting)
-        const distance = Math.sqrt(
-          Math.pow((actLng - queryLng) * Math.cos((queryLat * Math.PI) / 180), 2) +
-            Math.pow(actLat - queryLat, 2)
-        ) * 111320; // meters per degree
+          // Use proper Haversine distance calculation
+          const distance = calculateHaversineDistance(queryLat, queryLng, actLat, actLng);
 
-        return {
-          ...activity,
-          distance,
-        } as ActivityWithDistance;
-      });
+          return {
+            ...activity,
+            distance,
+          } as ActivityWithDistance;
+        });
 
       // Filter by maxDistance and sort
       return withDistance

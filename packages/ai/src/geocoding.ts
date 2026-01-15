@@ -64,6 +64,17 @@ export async function geocode(
   const apiKey = validateApiKey();
   const { formattedAddress, language = 'en' } = options;
 
+  // Input validation
+  if (!formattedAddress || formattedAddress.trim().length === 0) {
+    throw new Error('formattedAddress cannot be empty');
+  }
+  if (formattedAddress.length > 500) {
+    throw new Error('formattedAddress exceeds maximum length of 500 characters');
+  }
+  if (!language || language.length !== 2) {
+    throw new Error('language must be a valid 2-letter ISO language code');
+  }
+
   const params = new URLSearchParams({
     address: formattedAddress,
     language,
