@@ -80,7 +80,7 @@ export function ActivityCard({
             <MapPin className="h-4 w-4 shrink-0" />
             <span>{formatLocationShort(activity.location)}</span>
             {distance !== undefined && (
-              <span className="text-xs">({distance.toFixed(1)} km)</span>
+              <span className="text-xs">({(distance / 1000).toFixed(0)} km)</span>
             )}
           </div>
 
