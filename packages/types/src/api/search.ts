@@ -9,7 +9,7 @@ export const SearchQuery = z.object({
     .object({
       latitude: z.number().min(-90).max(90),
       longitude: z.number().min(-180).max(180),
-      radius: z.number().positive().max(100000).optional(), // in meters, max 100km
+      radius: z.number().positive().max(500000).optional(), // in meters, max 500km
     })
     .optional(),
   limit: z.number().positive().max(100).default(20),
@@ -39,6 +39,13 @@ export const SearchResponse = z.object({
     vectorSearchMs: z.number().optional(),
     embeddingMs: z.number().optional(),
     postProcessingMs: z.number().optional(),
+    locationAnalysisMs: z.number().optional(),
+    geocodingMs: z.number().optional(),
+    geoNearMs: z.number().optional(),
+    detectedLocation: z.object({
+      formattedAddress: z.string(),
+      coordinates: z.tuple([z.number(), z.number()]),
+    }).optional(),
   }),
 });
 

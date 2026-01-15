@@ -1,6 +1,6 @@
 'use client';
 
-import type { Activity } from '@action-atlas/types';
+import type { SearchResult } from '@action-atlas/types';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export interface SearchResultsProps {
-  results: Activity[];
+  results: SearchResult[];
   isLoading?: boolean;
   error?: Error | null;
   total?: number;

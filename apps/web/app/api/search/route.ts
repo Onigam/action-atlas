@@ -1,4 +1,7 @@
-import { semanticSearch, searchQueryToOptions } from '@action-atlas/ai';
+import {
+  locationAwareSearch,
+  searchQueryToLocationAwareOptions,
+} from '@action-atlas/ai';
 import { activities, connectToDatabase } from '@action-atlas/database';
 import { SearchQuery } from '@action-atlas/types';
 import type { SearchResponse } from '@action-atlas/types';
@@ -7,15 +10,17 @@ import { NextResponse } from 'next/server';
 import { handleApiError, validateRequest } from '@/lib/api-utils';
 
 /**
- * POST /api/search - Semantic search for activities
+ * POST /api/search - Location-aware semantic search for activities
  *
  * Performs vector-based semantic search using MongoDB Atlas Vector Search.
+ * Automatically detects location references in the query and applies
+ * geo-proximity sorting when a location is found.
  *
  * Request body:
  * {
  *   query: string,           // Search query (min 1, max 500 chars)
  *   category?: string[],     // Filter by categories
- *   location?: {
+ *   location?: {             // Optional explicit location (disables auto-detection)
  *     latitude: number,
  *     longitude: number,
  *     radius?: number        // in meters, default 50000 (50km)
@@ -33,7 +38,13 @@ import { handleApiError, validateRequest } from '@/lib/api-utils';
  *     cached: boolean,
  *     embeddingMs?: number,
  *     vectorSearchMs?: number,
- *     postProcessingMs?: number
+ *     postProcessingMs?: number,
+ *     locationAnalysisMs?: number,    // Time spent analyzing query for location
+ *     geocodingMs?: number,           // Time spent geocoding detected address
+ *     detectedLocation?: {            // Auto-detected location (if any)
+ *       formattedAddress: string,
+ *       coordinates: [lng, lat]
+ *     }
  *   }
  * }
  */
@@ -49,8 +60,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Cast to SearchQuery type (Zod's default() ensures limit and offset are always numbers)
     const searchQuery = validatedQuery as SearchQuery;
 
-    // Convert SearchQuery to VectorSearchOptions
-    const searchOptions = searchQueryToOptions(searchQuery);
+    // Convert SearchQuery to LocationAwareSearchOptions
+    const searchOptions = searchQueryToLocationAwareOptions(searchQuery);
 
     // CRITICAL: Connect to database first
     await connectToDatabase();
@@ -58,8 +69,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Get activities collection
     const activitiesCollection = activities();
 
-    // Execute semantic search
-    const searchResult = await semanticSearch(activitiesCollection, searchOptions);
+    // Execute location-aware semantic search
+    const searchResult = await locationAwareSearch(activitiesCollection, searchOptions);
 
     // Transform results to match SearchResponse format
     const results = searchResult.results.map((result) => ({
@@ -70,17 +81,34 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const executionTimeMs = Date.now() - startTime;
 
-    // Build response
+    // Build metadata object, only including optional fields if they have values
+    const metadata: SearchResponse['metadata'] = {
+      cached: false, // TODO: Implement Redis caching in future phase
+      embeddingMs: searchResult.metadata.embeddingMs,
+      vectorSearchMs: searchResult.metadata.vectorSearchMs,
+      postProcessingMs: searchResult.metadata.postProcessingMs,
+    };
+
+    // Add optional location-related metadata only if present
+    if (searchResult.metadata.locationAnalysisMs !== undefined) {
+      metadata.locationAnalysisMs = searchResult.metadata.locationAnalysisMs;
+    }
+    if (searchResult.metadata.geocodingMs !== undefined) {
+      metadata.geocodingMs = searchResult.metadata.geocodingMs;
+    }
+    if (searchResult.metadata.geoNearMs !== undefined) {
+      metadata.geoNearMs = searchResult.metadata.geoNearMs;
+    }
+    if (searchResult.metadata.detectedLocation !== undefined) {
+      metadata.detectedLocation = searchResult.metadata.detectedLocation;
+    }
+
+    // Build response with proper typing
     const response: SearchResponse = {
       results,
       total: searchResult.total,
       executionTimeMs,
-      metadata: {
-        cached: false, // TODO: Implement Redis caching in future phase
-        embeddingMs: searchResult.metadata.embeddingMs,
-        vectorSearchMs: searchResult.metadata.vectorSearchMs,
-        postProcessingMs: searchResult.metadata.postProcessingMs,
-      },
+      metadata,
     };
 
     return NextResponse.json(response, {
