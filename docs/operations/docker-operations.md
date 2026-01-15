@@ -85,10 +85,10 @@ docker-compose up -d
 docker-compose ps
 
 # Check MongoDB health
-docker exec action-atlas-mongodb mongosh --eval "db.adminCommand('ping')"
+docker exec mongo_vector_main mongosh --eval "db.adminCommand('ping')"
 
 # Check replica set status
-docker exec action-atlas-mongodb mongosh --eval "rs.status()"
+docker exec mongo_vector_main mongosh --eval "rs.status()"
 ```
 
 ### Restart Services
@@ -110,13 +110,13 @@ docker-compose up -d --force-recreate
 
 ```bash
 # Connect to MongoDB shell
-docker exec -it action-atlas-mongodb mongosh
+docker exec -it mongo_vector_main mongosh
 
 # Connect directly to actionatlas database
-docker exec -it action-atlas-mongodb mongosh actionatlas
+docker exec -it mongo_vector_main mongosh actionatlas
 
 # Run a single command
-docker exec action-atlas-mongodb mongosh --eval "db.activities.countDocuments()"
+docker exec mongo_vector_main mongosh --eval "db.activities.countDocuments()"
 ```
 
 ### Common MongoDB Commands
@@ -164,23 +164,23 @@ docker-compose logs -f mongodb-init
 
 ```bash
 # Create backup
-docker exec action-atlas-mongodb mongodump \
+docker exec mongo_vector_main mongodump \
   --db=actionatlas \
   --gzip \
   --archive=/tmp/backup.agz
 
 # Copy backup to host
-docker cp action-atlas-mongodb:/tmp/backup.agz ./backup-$(date +%Y%m%d).agz
+docker cp mongo_vector_main:/tmp/backup.agz ./backup-$(date +%Y%m%d).agz
 ```
 
 #### Restore Database
 
 ```bash
 # Copy backup to container
-docker cp ./backup.agz action-atlas-mongodb:/tmp/backup.agz
+docker cp ./backup.agz mongo_vector_main:/tmp/backup.agz
 
 # Restore backup
-docker exec action-atlas-mongodb mongorestore \
+docker exec mongo_vector_main mongorestore \
   --gzip \
   --archive=/tmp/backup.agz \
   --drop
@@ -226,16 +226,16 @@ docker-compose logs --since=10m
 
 ```bash
 # View MongoDB server logs
-docker logs action-atlas-mongodb
+docker logs mongo_vector_main
 
 # Follow MongoDB logs
-docker logs -f action-atlas-mongodb
+docker logs -f mongo_vector_main
 
 # Filter for errors
-docker logs action-atlas-mongodb 2>&1 | grep -i error
+docker logs mongo_vector_main 2>&1 | grep -i error
 
 # Check for vector search operations
-docker logs action-atlas-mongodb 2>&1 | grep -i vectorSearch
+docker logs mongo_vector_main 2>&1 | grep -i vectorSearch
 ```
 
 ### Resource Usage
@@ -245,7 +245,7 @@ docker logs action-atlas-mongodb 2>&1 | grep -i vectorSearch
 docker stats
 
 # View specific container stats
-docker stats action-atlas-mongodb
+docker stats mongo_vector_main
 
 # Check disk usage
 docker system df
@@ -267,7 +267,7 @@ docker volume inspect action-atlas_mongodb_data
 
 ```bash
 # Check logs for errors
-docker logs action-atlas-mongodb
+docker logs mongo_vector_main
 
 # Remove corrupted volumes
 docker-compose down -v
@@ -304,10 +304,10 @@ ports:
 
 ```bash
 # Check replica set status
-docker exec action-atlas-mongodb mongosh --eval "rs.status()"
+docker exec mongo_vector_main mongosh --eval "rs.status()"
 
 # Re-initialize replica set
-docker exec action-atlas-mongodb mongosh --eval "rs.initiate()"
+docker exec mongo_vector_main mongosh --eval "rs.initiate()"
 
 # Wait for replica set to stabilize (30 seconds)
 sleep 30
@@ -321,11 +321,11 @@ sleep 30
 
 ```bash
 # Check if index exists
-docker exec action-atlas-mongodb mongosh actionatlas \
+docker exec mongo_vector_main mongosh actionatlas \
   --eval "db.activities.getSearchIndexes()"
 
 # Recreate index (manual)
-docker exec action-atlas-mongodb mongosh actionatlas \
+docker exec mongo_vector_main mongosh actionatlas \
   --eval 'db.activities.createSearchIndex("activity_vector_search", "vectorSearch", {fields: [{type: "vector", path: "embedding", numDimensions: 1536, similarity: "cosine"}]})'
 ```
 
@@ -337,13 +337,13 @@ docker exec action-atlas-mongodb mongosh actionatlas \
 
 ```bash
 # Check resource usage
-docker stats action-atlas-mongodb
+docker stats mongo_vector_main
 
 # Check MongoDB server status
-docker exec action-atlas-mongodb mongosh --eval "db.serverStatus()"
+docker exec mongo_vector_main mongosh --eval "db.serverStatus()"
 
 # Check current operations
-docker exec action-atlas-mongodb mongosh --eval "db.currentOp()"
+docker exec mongo_vector_main mongosh --eval "db.currentOp()"
 
 # Increase Docker Desktop resources (Preferences > Resources)
 ```
@@ -438,23 +438,23 @@ scripts/docker-init/
 
 ```bash
 # Export activities collection
-docker exec action-atlas-mongodb mongoexport \
+docker exec mongo_vector_main mongoexport \
   --db=actionatlas \
   --collection=activities \
   --out=/tmp/activities.json
 
 # Copy to host
-docker cp action-atlas-mongodb:/tmp/activities.json ./
+docker cp mongo_vector_main:/tmp/activities.json ./
 ```
 
 #### Import from JSON
 
 ```bash
 # Copy to container
-docker cp ./activities.json action-atlas-mongodb:/tmp/
+docker cp ./activities.json mongo_vector_main:/tmp/
 
 # Import
-docker exec action-atlas-mongodb mongoimport \
+docker exec mongo_vector_main mongoimport \
   --db=actionatlas \
   --collection=activities \
   --file=/tmp/activities.json

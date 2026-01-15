@@ -104,9 +104,9 @@ async function checkDockerRunning(): Promise<boolean> {
 async function checkMongoDBContainer(): Promise<boolean> {
   try {
     const { stdout } = await execAsync(
-      'docker ps --filter "name=action-atlas-mongodb" --format "{{.Names}}"'
+      'docker ps --filter "name=mongo_vector_main" --format "{{.Names}}"'
     );
-    return stdout.trim().includes('action-atlas-mongodb');
+    return stdout.trim().includes('mongo_vector_main');
   } catch {
     return false;
   }

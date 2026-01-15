@@ -405,7 +405,7 @@ docker-compose logs mongodb-init
 ls -lh data/seed-dataset.agz
 
 # Manual restore:
-docker exec -it action-atlas-mongodb bash
+docker exec -it mongo_vector_main bash
 mongorestore --gzip --archive=/data/seed-dataset.agz
 ```
 
