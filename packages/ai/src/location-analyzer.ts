@@ -13,7 +13,7 @@ export const LocationExtractionResult = z.object({
   language: z
     .string()
     .nullable()
-    .describe('The ISO 3166-1 alpha-2 language code for the location'),
+    .describe('The ISO 639-1 alpha-2 language code for the location'),
 }).strict();
 
 export type LocationExtractionResult = z.infer<typeof LocationExtractionResult>;
@@ -22,7 +22,7 @@ export type LocationExtractionResult = z.infer<typeof LocationExtractionResult>;
  * System prompt for location extraction
  */
 const LOCATION_SYSTEM_PROMPT = `You are an expert at detecting if a user query is related to a location.
-If the user is asking for recommendations near a specific location, you should return the formatted location and related language alpha-2 ISO 3166-1 in the output.
+If the user is asking for recommendations near a specific location, you should return the formatted location and related language alpha-2 ISO 639-1 in the output.
 This formatted address should be in the format of "Address (if any), City, State, Country", it will be used then to do a geocoding request.
 Otherwise, return null for both fields.
 
