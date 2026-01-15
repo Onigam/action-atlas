@@ -90,7 +90,7 @@ jobs:
         run: pnpm build
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli@3.11.0
+        run: npm install -g @railway/cli@latest
 
       - name: Set Railway Environment Variables
         env:
