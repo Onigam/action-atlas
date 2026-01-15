@@ -200,8 +200,11 @@ function applyGeoNearSorting(
   const [queryLng, queryLat] = coordinates;
 
   const withScores = activities.map((activity) => {
-    const actLng = activity.location?.coordinates?.coordinates?.[0];
-    const actLat = activity.location?.coordinates?.coordinates?.[1];
+    // Coordinates are stored in geolocations array (first entry)
+    // Format: geolocations[0].coordinates = [longitude, latitude]
+    const firstGeolocation = (activity as Record<string, unknown>)['geolocations'] as Array<{ coordinates?: [number, number] }> | undefined;
+    const actLng = firstGeolocation?.[0]?.coordinates?.[0];
+    const actLat = firstGeolocation?.[0]?.coordinates?.[1];
     const hasValidCoordinates = isValidCoordinates(actLat, actLng);
 
     if (hasValidCoordinates) {
