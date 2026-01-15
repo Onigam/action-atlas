@@ -26,15 +26,24 @@ export function useInfiniteSearch({
   // Debounce query to avoid excessive API calls
   const debouncedQuery = useDebounce(query, 300);
 
+  // Check if we have filters that should trigger a search
+  const hasFilters = Boolean(filters.category || filters.location);
+
+  // Search is enabled if: (query >= 3 chars) OR (we have filters applied)
+  const shouldSearch = enabled && (debouncedQuery.length >= 3 || hasFilters);
+
+  // Use a generic search term when only filters are applied (API requires min 1 char)
+  const searchQuery = debouncedQuery.length >= 1 ? debouncedQuery : 'volunteering';
+
   return useInfiniteQuery<SearchResponse>({
     queryKey: ['search-infinite', debouncedQuery, filters, limit],
     queryFn: ({ pageParam = 0 }) =>
-      searchActivities(debouncedQuery, {
+      searchActivities(searchQuery, {
         ...filters,
         limit,
         offset: pageParam as number,
       }),
-    enabled: enabled && debouncedQuery.length >= 3, // Only search if query is 3+ chars
+    enabled: shouldSearch,
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       const loadedCount = allPages.reduce(

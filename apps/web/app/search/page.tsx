@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryState, parseAsString } from 'nuqs';
+import { useQueryState, parseAsString, parseAsInteger, parseAsArrayOf } from 'nuqs';
 import * as React from 'react';
 import { Suspense } from 'react';
 
@@ -9,26 +9,86 @@ import { Header } from '@/components/layout/Header';
 import { FilterPanel, type SearchFilters } from '@/components/search/FilterPanel';
 import { SearchBar } from '@/components/search/SearchBar';
 import { SearchResults } from '@/components/search/SearchResults';
-import { useInfiniteSearch } from '@/lib/hooks';
+import { useInfiniteSearch, useGeolocation } from '@/lib/hooks';
 
 function SearchContent() {
   const [query, setQuery] = useQueryState('q', parseAsString.withDefault(''));
-  const [filters, setFilters] = React.useState<SearchFilters>({});
+  // URL-synced filter parameters
+  const [urlCategories, setUrlCategories] = useQueryState(
+    'categories',
+    parseAsArrayOf(parseAsString).withDefault([])
+  );
+  const [urlDistance, setUrlDistance] = useQueryState('distance', parseAsInteger);
+
+  const geolocation = useGeolocation();
+
+  // Build filters object from URL params
+  const filters = React.useMemo<SearchFilters>(() => {
+    const f: SearchFilters = {};
+    if (urlCategories.length > 0) {
+      f.categories = urlCategories;
+    }
+    if (urlDistance !== null) {
+      f.distance = urlDistance;
+    }
+    return f;
+  }, [urlCategories, urlDistance]);
+
+  // Request location when user selects a distance filter (not "Any distance")
+  React.useEffect(() => {
+    if (
+      filters.distance &&
+      filters.distance > 0 &&
+      !geolocation.hasLocation &&
+      !geolocation.isLoading &&
+      !geolocation.error
+    ) {
+      geolocation.requestLocation();
+    }
+  }, [filters.distance, geolocation]);
+
+  // Build location object for search when we have both distance filter and coordinates
+  const locationFilter = React.useMemo(() => {
+    if (
+      filters.distance &&
+      filters.distance > 0 &&
+      geolocation.latitude !== null &&
+      geolocation.longitude !== null
+    ) {
+      return {
+        lat: geolocation.latitude,
+        lng: geolocation.longitude,
+        maxDistance: filters.distance * 1000, // Convert km to meters
+      };
+    }
+    return undefined;
+  }, [filters.distance, geolocation.latitude, geolocation.longitude]);
+
+  // Handle filter changes - update URL params immediately
+  const handleFilterChange = React.useCallback(
+    (newFilters: SearchFilters) => {
+      void setUrlCategories(newFilters.categories?.length ? newFilters.categories : []);
+      void setUrlDistance(newFilters.distance ?? null);
+    },
+    [setUrlCategories, setUrlDistance]
+  );
+
+  // Handle clearing filters
+  const handleClearFilters = React.useCallback(() => {
+    void setUrlCategories([]);
+    void setUrlDistance(null);
+    geolocation.clearLocation();
+  }, [geolocation, setUrlCategories, setUrlDistance]);
 
   // Use infinite search hook for pagination
-  const {
-    data,
-    isLoading,
-    error,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteSearch({
-    query,
-    ...(filters.categories?.[0] && { category: filters.categories[0] }),
-    enabled: query.length >= 3,
-    limit: 20, // Load 20 results per page
-  });
+  // The hook will trigger search if: query >= 3 chars OR filters are applied
+  const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteSearch({
+      query,
+      ...(filters.categories?.[0] && { category: filters.categories[0] }),
+      ...(locationFilter && { location: locationFilter }),
+      limit: 20, // Load 20 results per page
+    });
 
   // Flatten paginated results
   const allResults = React.useMemo(
@@ -68,9 +128,14 @@ function SearchContent() {
           {/* Filters Sidebar */}
           <FilterPanel
             filters={filters}
-            onChange={setFilters}
-            onClear={() => setFilters({})}
+            onChange={handleFilterChange}
+            onClear={handleClearFilters}
             className="hidden lg:block lg:sticky lg:top-8 lg:h-fit"
+            geolocationStatus={{
+              isLoading: geolocation.isLoading,
+              hasLocation: geolocation.hasLocation,
+              error: geolocation.error,
+            }}
           />
 
           {/* Results */}

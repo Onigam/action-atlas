@@ -1,6 +1,6 @@
 'use client';
 
-import { Filter } from 'lucide-react';
+import { Filter, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -12,11 +12,18 @@ export interface SearchFilters {
   timeCommitment?: string | undefined;
 }
 
+export interface GeolocationStatus {
+  isLoading: boolean;
+  hasLocation: boolean;
+  error: string | null;
+}
+
 export interface FilterPanelProps {
   filters: SearchFilters;
   onChange: (filters: SearchFilters) => void;
   onClear?: () => void;
   className?: string;
+  geolocationStatus?: GeolocationStatus;
 }
 
 export function FilterPanel({
@@ -24,6 +31,7 @@ export function FilterPanel({
   onChange,
   onClear,
   className,
+  geolocationStatus,
 }: FilterPanelProps) {
   const handleCategoryToggle = (category: string) => {
     const currentCategories = filters.categories || [];
@@ -101,6 +109,31 @@ export function FilterPanel({
           <h3 className="text-sm font-black uppercase tracking-wide text-black">
             Distance
           </h3>
+
+          {/* Geolocation Status */}
+          {geolocationStatus && filters.distance && filters.distance > 0 && (
+            <div className="rounded-lg border-2 border-black p-2">
+              {geolocationStatus.isLoading && (
+                <div className="flex items-center gap-2 text-sm text-black/70">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="font-medium">Getting your location...</span>
+                </div>
+              )}
+              {geolocationStatus.hasLocation && !geolocationStatus.isLoading && (
+                <div className="flex items-center gap-2 text-sm text-green-700">
+                  <MapPin className="h-4 w-4" />
+                  <span className="font-medium">Location detected</span>
+                </div>
+              )}
+              {geolocationStatus.error && (
+                <div className="flex items-center gap-2 text-sm text-destructive-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="font-medium">{geolocationStatus.error}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             {DISTANCE_OPTIONS.map((option) => (
               <label
@@ -134,7 +167,7 @@ export function FilterPanel({
           </div>
         </div>
 
-        {/* Clear Filters */}
+        {/* Clear Filters Button */}
         {activeFiltersCount > 0 && (
           <button
             onClick={() => {

@@ -22,6 +22,12 @@ export interface LocationAwareSearchOptions {
     longitude: number;
     maxDistance?: number;
   };
+  /** Fallback location used only when no location is detected from query */
+  fallbackLocation?: {
+    latitude: number;
+    longitude: number;
+    maxDistance?: number;
+  };
 }
 
 export interface LocationAwareSearchResult {
@@ -302,6 +308,7 @@ export async function locationAwareSearch(
     isActive = true,
     autoDetectLocation = true,
     location: explicitLocation,
+    fallbackLocation,
   } = options;
 
   // Metadata tracking
@@ -379,6 +386,15 @@ export async function locationAwareSearch(
         // searchLocation remains undefined, so we'll proceed with pure semantic search
       }
     }
+  }
+
+  // 2b. Use fallback location if no location was detected from query
+  if (!searchLocation && fallbackLocation) {
+    searchLocation = {
+      latitude: fallbackLocation.latitude,
+      longitude: fallbackLocation.longitude,
+      maxDistance: fallbackLocation.maxDistance ?? 50000,
+    };
   }
 
   // 3. Execute vector search to get candidates
@@ -518,7 +534,7 @@ export function searchQueryToLocationAwareOptions(
   }
 
   if (query.location) {
-    // If explicit location is provided, use it (disables auto-detection)
+    // Use location as fallback (will only be used if no location detected in query)
     const locationOption: {
       latitude: number;
       longitude: number;
@@ -530,8 +546,8 @@ export function searchQueryToLocationAwareOptions(
     if (query.location.radius !== undefined) {
       locationOption.maxDistance = query.location.radius;
     }
-    options.location = locationOption;
-    options.autoDetectLocation = false;
+    options.fallbackLocation = locationOption;
+    // Keep autoDetectLocation = true so query location detection runs first
   }
 
   return options;

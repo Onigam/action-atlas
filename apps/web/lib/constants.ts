@@ -92,8 +92,6 @@ export const TIME_COMMITMENTS = [
  * Distance filter options (in kilometers)
  */
 export const DISTANCE_OPTIONS = [
-  { value: 5, label: 'Within 5km' },
-  { value: 10, label: 'Within 10km' },
   { value: 25, label: 'Within 25km' },
   { value: 50, label: 'Within 50km' },
   { value: 100, label: 'Within 100km' },
