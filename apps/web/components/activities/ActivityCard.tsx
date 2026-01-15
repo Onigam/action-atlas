@@ -1,4 +1,4 @@
-import type { Activity } from '@action-atlas/types';
+import type { SearchResult } from '@action-atlas/types';
 import { MapPin, Clock, Award } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { ROUTES, ACTIVITY_CATEGORIES } from '@/lib/constants';
 import { truncate, formatLocationShort } from '@/lib/utils';
 
 export interface ActivityCardProps {
-  activity: Activity;
+  activity: SearchResult;
   relevanceScore?: number;
   distance?: number;
 }
@@ -29,13 +29,13 @@ export function ActivityCard({
     ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category;
 
   // Seed data uses cuid instead of activityId
-  const activityId = activity.activityId || (activity as any).cuid || (activity as any)._id;
+  const activityId = activity.activityId || activity.cuid || activity._id || '';
 
   // Seed data uses shortDescription field
-  const description = (activity as any).shortDescription || activity.description;
+  const description = activity.shortDescription || activity.description;
 
   // Seed data may have coverImageUrl
-  const coverImageUrl = (activity as any).coverImageUrl;
+  const coverImageUrl = activity.coverImageUrl || undefined;
 
   return (
     <Link href={ROUTES.ACTIVITY(activityId)}>
@@ -65,7 +65,7 @@ export function ActivityCard({
             )}
           </div>
           <CardDescription className="line-clamp-2">
-            {truncate(description, 120)}
+            {truncate(description || '', 120)}
           </CardDescription>
         </CardHeader>
 

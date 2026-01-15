@@ -1,7 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import type { SearchResponse } from '@action-atlas/types';
+import { useQuery } from '@tanstack/react-query';
 
 import { searchActivities, type SearchFilters } from '@/lib/api-client';
 

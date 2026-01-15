@@ -1,3 +1,4 @@
+import type { Location } from '@action-atlas/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -69,9 +70,9 @@ export function truncate(text: string, maxLength: number): string {
 /**
  * Format a location address to a short string
  */
-export function formatLocationShort(location: any): string {
+export function formatLocationShort(location: Location | string): string {
   // Handle new structure: { address: { city, country } }
-  if (location?.address?.city) {
+  if (typeof location === 'object' && location?.address?.city) {
     const { city, country } = location.address;
     return country ? `${city}, ${country}` : city;
   }

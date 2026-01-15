@@ -83,7 +83,7 @@ function SearchContent() {
               error={error}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
-              fetchNextPage={fetchNextPage}
+              fetchNextPage={fetchNextPage as () => Promise<unknown>}
               {...(executionTimeMs !== undefined && {
                 executionTimeMs,
               })}
