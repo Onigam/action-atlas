@@ -31,7 +31,7 @@ mongorestore \
     --gzip \
     --archive="$DATA_FILE" \
     --drop \
-    --nsFrom='thegoodsearch.*' \
+    --nsFrom='actionatlas.*' \
     --nsTo='actionatlas.*'
 
 # Verify data loaded and create indexes

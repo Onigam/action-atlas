@@ -318,7 +318,7 @@ pnpm test
 docker ps
 
 # Check MongoDB container
-docker logs action-atlas-mongodb
+docker logs mongo_vector_main
 
 # Restart MongoDB
 docker-compose restart mongodb

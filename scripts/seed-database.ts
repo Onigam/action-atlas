@@ -137,7 +137,7 @@ async function loadSeedData(verbose: boolean): Promise<void> {
   if (useDocker) {
     // Use Docker to run mongorestore
     // The seed data is from "thegoodsearch" database, we need to restore it as "actionatlas"
-    command = `docker exec -i action-atlas-mongodb mongorestore --gzip --archive --drop --nsFrom='thegoodsearch.*' --nsTo='actionatlas.*' < "${SEED_DATA_PATH}"`;
+    command = `docker exec -i mongo_vector_main mongorestore --gzip --archive --drop --nsFrom='actionatlas.*' --nsTo='actionatlas.*' < "${SEED_DATA_PATH}"`;
     if (verbose) {
       console.log(chalk.dim('Using Docker container for mongorestore'));
       console.log(chalk.dim('Restoring thegoodsearch → actionatlas'));
@@ -148,7 +148,7 @@ async function loadSeedData(verbose: boolean): Promise<void> {
     if (!mongoUri) {
       throw new Error('MONGODB_URI environment variable is not set');
     }
-    command = `mongorestore --uri="${mongoUri}" --gzip --archive="${SEED_DATA_PATH}" --drop --nsFrom='thegoodsearch.*' --nsTo='actionatlas.*'`;
+    command = `mongorestore --uri="${mongoUri}" --gzip --archive="${SEED_DATA_PATH}" --drop --nsFrom='actionatlas.*' --nsTo='actionatlas.*'`;
     if (verbose) {
       console.log(chalk.dim('Using local mongorestore'));
       console.log(chalk.dim('Restoring thegoodsearch → actionatlas'));
@@ -177,7 +177,7 @@ async function loadSeedData(verbose: boolean): Promise<void> {
 
 async function checkDockerAvailable(): Promise<boolean> {
   try {
-    await execAsync('docker ps --filter "name=action-atlas-mongodb" --format "{{.Names}}"');
+    await execAsync('docker ps --filter "name=mongo_vector_main" --format "{{.Names}}"');
     return true;
   } catch {
     return false;

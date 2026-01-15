@@ -279,7 +279,7 @@ cp .env.example .env.local
 docker-compose up -d
 
 # 5. Initialize replica set (first time only)
-docker exec action-atlas-mongodb mongosh --eval "rs.initiate()"
+docker exec mongo_vector_main mongosh --eval "rs.initiate()"
 sleep 5
 
 # 6. Run complete setup
