@@ -200,26 +200,39 @@ function applyGeoNearSorting(
   const [queryLng, queryLat] = coordinates;
 
   const withScores = activities.map((activity) => {
-    // Coordinates are stored in geolocations array (first entry)
-    // Format: geolocations[0].coordinates = [longitude, latitude]
-    const firstGeolocation = (activity as Record<string, unknown>)['geolocations'] as Array<{ coordinates?: [number, number] }> | undefined;
-    const actLng = firstGeolocation?.[0]?.coordinates?.[0];
-    const actLat = firstGeolocation?.[0]?.coordinates?.[1];
-    const hasValidCoordinates = isValidCoordinates(actLat, actLng);
+    // Activities can have multiple geolocations - find the closest one
+    // Format: geolocations[].coordinates = [longitude, latitude]
+    const geolocations = (activity as Record<string, unknown>)['geolocations'] as Array<{ coordinates?: [number, number] }> | undefined;
 
-    if (hasValidCoordinates) {
-      // Activity has coordinates - calculate distance and proximity score
-      const distance = calculateHaversineDistance(queryLat, queryLng, actLat!, actLng!);
-      const proximityScore = Math.max(0, 1 - distance / maxDistance);
+    // Calculate distance to each valid geolocation and find the minimum
+    let minDistance: number | undefined;
+
+    if (geolocations && geolocations.length > 0) {
+      for (const geo of geolocations) {
+        const geoLng = geo.coordinates?.[0];
+        const geoLat = geo.coordinates?.[1];
+
+        if (isValidCoordinates(geoLat, geoLng)) {
+          const distance = calculateHaversineDistance(queryLat, queryLng, geoLat!, geoLng!);
+          if (minDistance === undefined || distance < minDistance) {
+            minDistance = distance;
+          }
+        }
+      }
+    }
+
+    if (minDistance !== undefined) {
+      // Activity has at least one valid geolocation - use closest distance
+      const proximityScore = Math.max(0, 1 - minDistance / maxDistance);
       const finalScore = activity.relevanceScore * 0.7 + proximityScore * 0.3;
 
       return {
         ...activity,
-        distance,
+        distance: minDistance,
         finalScore,
       };
     } else {
-      // Activity has no coordinates - use relevance only (no proximity boost)
+      // Activity has no valid coordinates - use relevance only (no proximity boost)
       // These will naturally rank lower than nearby activities with same relevance
       return {
         ...activity,
