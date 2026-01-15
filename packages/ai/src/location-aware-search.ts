@@ -132,6 +132,9 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
 
 /**
  * Manual vector search fallback for local development
+ *
+ * When returnAll is true, returns ALL scored activities (for geo-sorting).
+ * Otherwise, returns top N by semantic similarity.
  */
 async function manualVectorSearch(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,9 +144,10 @@ async function manualVectorSearch(
     limit: number;
     category?: string | string[];
     isActive?: boolean;
+    returnAll?: boolean;
   }
 ): Promise<Array<ActivityDocument & { relevanceScore: number }>> {
-  const { limit, category, isActive = true } = options;
+  const { limit, category, isActive = true, returnAll = false } = options;
 
   const filter: Document = {};
 
@@ -161,7 +165,6 @@ async function manualVectorSearch(
 
   const documents = await collection
     .find({ ...filter, embedding: { $exists: true, $ne: null } })
-    .limit(5000) // Higher limit for local development to include more diverse activities
     .toArray();
 
   const scored = documents.map((doc: ActivityDocument) => {
@@ -180,7 +183,9 @@ async function manualVectorSearch(
       b.relevanceScore - a.relevanceScore
   );
 
-  return scored.slice(0, limit);
+  // When location search is active, return all results for geo-sorting
+  // Otherwise, return only top N by semantic similarity
+  return returnAll ? scored : scored.slice(0, limit);
 }
 
 /**
@@ -413,9 +418,13 @@ export async function locationAwareSearch(
         limit: number;
         category?: string | string[];
         isActive: boolean;
+        returnAll?: boolean;
       } = {
         limit: candidateLimit,
         isActive,
+        // When location is detected, return ALL results so geo-sorting
+        // can properly rank nearby activities regardless of semantic score
+        returnAll: !!searchLocation,
       };
       if (category !== undefined) {
         manualOptions.category = category;
