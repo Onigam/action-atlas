@@ -1,4 +1,5 @@
 import { MongoClient, type Db } from 'mongodb';
+import crypto from 'crypto';
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -14,15 +15,30 @@ export async function connectToDatabase(): Promise<Db> {
   }
 
   // Debug: Log the URI being used (masking any credentials)
-  console.log('[Database] Connecting to MongoDB:', uri.replace(/:[^:]*@/, ':****@'));
+  console.log(
+    '[Database] Connecting to MongoDB:',
+    uri.replace(/:[^:]*@/, ':****@')
+  );
 
   client = new MongoClient(uri, {
     maxPoolSize: 10,
     minPoolSize: 2,
     serverSelectionTimeoutMS: 5000,
+    // Workaround for "unsafe legacy renegotiation disabled" error in OpenSSL 3.0+
+    // Railway environment uses OpenSSL 3.0+ which can cause TLS handshake errors
+    // with outdated SSL proxies. This option enables legacy server connect.
+    // Reference: https://www.mongodb.com/docs/drivers/node/current/security/tls/
+    secureContext: {
+      secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+    },
   });
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    console.error('[Database] Connection failed:', error);
+    throw error;
+  }
 
   const dbName = new URL(uri).pathname.slice(1) || 'actionatlas';
   db = client.db(dbName);
@@ -40,9 +56,7 @@ export async function disconnectFromDatabase(): Promise<void> {
 
 export function getDatabase(): Db {
   if (!db) {
-    throw new Error(
-      'Database not connected. Call connectToDatabase() first.'
-    );
+    throw new Error('Database not connected. Call connectToDatabase() first.');
   }
   return db;
 }
