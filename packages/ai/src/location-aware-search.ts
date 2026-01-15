@@ -1,4 +1,4 @@
-import type { Document } from 'mongodb';
+import type { Document, Collection } from 'mongodb';
 
 import type { ActivityDocument, Embedding, SearchQuery } from '@action-atlas/types';
 
@@ -6,6 +6,7 @@ import { generateEmbedding } from './embedding';
 import { InMemoryEmbeddingCache, createCacheKey } from './cache';
 import { analyzeLocationQuery, hasValidLocation } from './location-analyzer';
 import { geocodeFirst, isGeocodingAvailable } from './geocoding';
+import { calculateHaversineDistance, isValidCoordinates } from './utils/geo';
 
 export interface LocationAwareSearchOptions {
   query: string;
@@ -192,26 +193,29 @@ function applyGeoNearSorting(
 ): Array<ActivityDocument & { relevanceScore: number; distance: number; finalScore: number }> {
   const [queryLng, queryLat] = coordinates;
 
-  const withDistance = activities.map((activity) => {
-    const actLng = activity.location?.coordinates?.coordinates?.[0] ?? 0;
-    const actLat = activity.location?.coordinates?.coordinates?.[1] ?? 0;
+  const withDistance = activities
+    .filter((activity) => {
+      // Filter out activities without valid coordinates
+      const actLng = activity.location?.coordinates?.coordinates?.[0];
+      const actLat = activity.location?.coordinates?.coordinates?.[1];
+      return isValidCoordinates(actLat, actLng);
+    })
+    .map((activity) => {
+      const actLng = activity.location!.coordinates!.coordinates![0];
+      const actLat = activity.location!.coordinates!.coordinates![1];
 
-    // Haversine approximation
-    const distance =
-      Math.sqrt(
-        Math.pow((actLng - queryLng) * Math.cos((queryLat * Math.PI) / 180), 2) +
-          Math.pow(actLat - queryLat, 2)
-      ) * 111320;
+      // Use proper Haversine distance calculation
+      const distance = calculateHaversineDistance(queryLat, queryLng, actLat, actLng);
 
-    const proximityScore = Math.max(0, 1 - distance / maxDistance);
-    const finalScore = activity.relevanceScore * 0.7 + proximityScore * 0.3;
+      const proximityScore = Math.max(0, 1 - distance / maxDistance);
+      const finalScore = activity.relevanceScore * 0.7 + proximityScore * 0.3;
 
-    return {
-      ...activity,
-      distance,
-      finalScore,
-    };
-  });
+      return {
+        ...activity,
+        distance,
+        finalScore,
+      };
+    });
 
   return withDistance
     .filter((a) => a.distance <= maxDistance)
@@ -232,10 +236,35 @@ function applyGeoNearSorting(
  * @returns Search results with relevance scores and optional distances
  */
 export async function locationAwareSearch(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collection: any,
+  collection: Collection<ActivityDocument>,
   options: LocationAwareSearchOptions
 ): Promise<LocationAwareSearchResponse> {
+  // Input validation
+  if (!options.query || options.query.trim().length === 0) {
+    throw new Error('Query cannot be empty');
+  }
+  if (options.query.length > 500) {
+    throw new Error('Query exceeds maximum length of 500 characters');
+  }
+  if (options.limit && (options.limit <= 0 || options.limit > 100)) {
+    throw new Error('Limit must be between 1 and 100');
+  }
+  if (options.numCandidates && (options.numCandidates <= 0 || options.numCandidates > 1000)) {
+    throw new Error('numCandidates must be between 1 and 1000');
+  }
+  if (options.location) {
+    const { latitude, longitude, maxDistance } = options.location;
+    if (latitude < -90 || latitude > 90) {
+      throw new Error('Latitude must be between -90 and 90 degrees');
+    }
+    if (longitude < -180 || longitude > 180) {
+      throw new Error('Longitude must be between -180 and 180 degrees');
+    }
+    if (maxDistance && (maxDistance <= 0 || maxDistance > 500000)) {
+      throw new Error('maxDistance must be between 1 and 500,000 meters');
+    }
+  }
+
   const startTime = Date.now();
   const {
     query,
@@ -337,7 +366,7 @@ export async function locationAwareSearch(
 
   try {
     const pipeline = buildInitialVectorSearchPipeline(queryVector, pipelineOptions);
-    semanticResults = await collection.aggregate(pipeline).toArray();
+    semanticResults = (await collection.aggregate(pipeline).toArray()) as Array<ActivityDocument & { relevanceScore: number }>;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 

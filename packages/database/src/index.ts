@@ -11,3 +11,6 @@ export * from './indexes';
 
 // CRUD Operations
 export * from './operations';
+
+// Utilities
+export * from './utils/geo';

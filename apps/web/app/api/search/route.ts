@@ -82,11 +82,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const executionTimeMs = Date.now() - startTime;
 
     // Build metadata object, only including optional fields if they have values
-    const metadata: SearchResponse['metadata'] & {
-      locationAnalysisMs?: number;
-      geocodingMs?: number;
-      detectedLocation?: { formattedAddress: string; coordinates: [number, number] };
-    } = {
+    const metadata: SearchResponse['metadata'] = {
       cached: false, // TODO: Implement Redis caching in future phase
       embeddingMs: searchResult.metadata.embeddingMs,
       vectorSearchMs: searchResult.metadata.vectorSearchMs,
@@ -100,18 +96,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (searchResult.metadata.geocodingMs !== undefined) {
       metadata.geocodingMs = searchResult.metadata.geocodingMs;
     }
+    if (searchResult.metadata.geoNearMs !== undefined) {
+      metadata.geoNearMs = searchResult.metadata.geoNearMs;
+    }
     if (searchResult.metadata.detectedLocation !== undefined) {
       metadata.detectedLocation = searchResult.metadata.detectedLocation;
     }
 
-    // Build response with extended metadata
-    const response: SearchResponse & {
-      metadata: {
-        locationAnalysisMs?: number;
-        geocodingMs?: number;
-        detectedLocation?: { formattedAddress: string; coordinates: [number, number] };
-      };
-    } = {
+    // Build response with proper typing
+    const response: SearchResponse = {
       results,
       total: searchResult.total,
       executionTimeMs,

@@ -39,6 +39,13 @@ export const SearchResponse = z.object({
     vectorSearchMs: z.number().optional(),
     embeddingMs: z.number().optional(),
     postProcessingMs: z.number().optional(),
+    locationAnalysisMs: z.number().optional(),
+    geocodingMs: z.number().optional(),
+    geoNearMs: z.number().optional(),
+    detectedLocation: z.object({
+      formattedAddress: z.string(),
+      coordinates: z.tuple([z.number(), z.number()]),
+    }).optional(),
   }),
 });
 
