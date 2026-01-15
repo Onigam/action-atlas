@@ -421,11 +421,26 @@ export async function locationAwareSearch(
 
     geoNearMs = Date.now() - geoNearStart;
 
-    finalResults = geoSortedResults.map((doc) => ({
-      document: doc as ActivityDocument,
-      relevanceScore: doc.finalScore,
-      distance: doc.distance,
-    }));
+    // If geo-sorting returned results, use them
+    // Otherwise, fall back to semantic results (activities may not have location data)
+    if (geoSortedResults.length > 0) {
+      finalResults = geoSortedResults.map((doc) => ({
+        document: doc as ActivityDocument,
+        relevanceScore: doc.finalScore,
+        distance: doc.distance,
+      }));
+    } else {
+      // Fallback: no activities had valid coordinates within range
+      // Return semantic results without location filtering
+      console.warn(
+        '[Location-Aware Search] No activities found with valid coordinates within range, ' +
+        'falling back to semantic results'
+      );
+      finalResults = semanticResults.slice(0, limit).map((doc) => ({
+        document: doc as ActivityDocument,
+        relevanceScore: doc.relevanceScore,
+      }));
+    }
   } else {
     // No location filtering - return semantic results directly
     finalResults = semanticResults.slice(0, limit).map((doc) => ({
