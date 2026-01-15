@@ -2,7 +2,9 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 
-import { searchActivities, type SearchResponse, type SearchFilters } from '@/lib/api-client';
+import type { SearchResponse } from '@action-atlas/types';
+
+import { searchActivities, type SearchFilters } from '@/lib/api-client';
 
 import { useDebounce } from './useDebounce';
 
@@ -36,7 +38,10 @@ export function useInfiniteSearch({
     enabled: enabled && debouncedQuery.length >= 3, // Only search if query is 3+ chars
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      const loadedCount = allPages.reduce((sum, page) => sum + page.results.length, 0);
+      const loadedCount = allPages.reduce(
+        (sum, page) => sum + page.results.length,
+        0
+      );
       // Return next offset if there are more results
       return loadedCount < lastPage.total ? loadedCount : undefined;
     },

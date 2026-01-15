@@ -1,8 +1,5 @@
 import type { Activity, Organization, SearchResponse } from '@action-atlas/types';
 
-// Re-export SearchResponse for use in hooks
-export type { SearchResponse };
-
 import { API_ROUTES } from './constants';
 
 /**
