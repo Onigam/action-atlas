@@ -141,6 +141,9 @@ importers:
 
   packages/ai:
     dependencies:
+      '@action-atlas/database':
+        specifier: workspace:*
+        version: link:../database
       '@action-atlas/types':
         specifier: workspace:*
         version: link:../types
