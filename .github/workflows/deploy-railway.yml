@@ -107,16 +107,16 @@ jobs:
         run: |
           set +x  # Disable command echoing for security
 
-          railway variables --set MONGODB_URI="$MONGODB_URI" --environment production
-          railway variables --set OPENAI_API_KEY="$OPENAI_API_KEY" --environment production
-          railway variables --set GOOGLE_API_KEY="$GOOGLE_API_KEY" --environment production
-          railway variables --set REDIS_URL="$REDIS_URL" --environment production
-          railway variables --set NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" --environment production
-          railway variables --set NODE_ENV="production" --environment production
-          railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="$NEXT_PUBLIC_ENABLE_SEARCH" --environment production
-          railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="$NEXT_PUBLIC_ENABLE_GEOSPATIAL" --environment production
-          railway variables --set LOG_LEVEL="$LOG_LEVEL" --environment production
-          railway variables --set RATE_LIMIT_RPM="$RATE_LIMIT_RPM" --environment production
+          railway variables --set MONGODB_URI="$MONGODB_URI" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set OPENAI_API_KEY="$OPENAI_API_KEY" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set GOOGLE_API_KEY="$GOOGLE_API_KEY" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set REDIS_URL="$REDIS_URL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set NODE_ENV="production" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="$NEXT_PUBLIC_ENABLE_SEARCH" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="$NEXT_PUBLIC_ENABLE_GEOSPATIAL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set LOG_LEVEL="$LOG_LEVEL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set RATE_LIMIT_RPM="$RATE_LIMIT_RPM" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
 
           echo "✅ Environment variables configured"
 
