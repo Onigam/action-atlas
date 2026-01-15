@@ -161,7 +161,7 @@ async function manualVectorSearch(
 
   const documents = await collection
     .find({ ...filter, embedding: { $exists: true, $ne: null } })
-    .limit(1000) // Limit to prevent OOM in local development fallback
+    .limit(5000) // Higher limit for local development to include more diverse activities
     .toArray();
 
   const scored = documents.map((doc: ActivityDocument) => {
@@ -380,8 +380,9 @@ export async function locationAwareSearch(
   const vectorSearchStart = Date.now();
   let semanticResults: Array<ActivityDocument & { relevanceScore: number }>;
 
-  // Get more candidates if we're going to filter by location
-  const candidateLimit = searchLocation ? Math.min(numCandidates, 100) : limit;
+  // Get MORE candidates when location is detected to include nearby activities
+  // that might not rank high semantically but are geographically relevant
+  const candidateLimit = searchLocation ? Math.max(numCandidates, 500) : limit;
 
   // Build options objects, only including category if defined
   const pipelineOptions: {
