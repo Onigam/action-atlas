@@ -1,6 +1,6 @@
 'use client';
 
-import type { Activity } from '@action-atlas/types';
+import type { SearchResult } from '@action-atlas/types';
 import {
   MapPin,
   Clock,
@@ -21,7 +21,7 @@ import { ACTIVITY_CATEGORIES, ROUTES } from '@/lib/constants';
 import { formatDate, formatLocationShort } from '@/lib/utils';
 
 export interface ActivityDetailProps {
-  activity: Activity;
+  activity: SearchResult;
 }
 
 export function ActivityDetail({ activity }: ActivityDetailProps) {
@@ -29,13 +29,13 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
     ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category;
 
   // Seed data uses shortDescription field
-  const description = (activity as any).shortDescription || activity.description;
+  const description = activity.shortDescription || activity.description;
 
   // Seed data uses charity field instead of organizationId
-  const organizationId = activity.organizationId || (activity as any).charity;
+  const organizationId = activity.organizationId || activity.charity || '';
 
   // Seed data may have coverImageUrl
-  const coverImageUrl = (activity as any).coverImageUrl;
+  const coverImageUrl = activity.coverImageUrl || undefined;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -43,7 +43,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       if (navigator.share) {
         await navigator.share({
           title: activity.title,
-          text: description.slice(0, 160),
+          text: (description || '').slice(0, 160),
           url,
         });
       } else {
@@ -106,7 +106,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
         </h1>
 
         <div className="flex flex-wrap items-center gap-3">
-          {organizationId && (
+          {organizationId && organizationId.trim() && (
             <Link
               href={ROUTES.ORGANIZATION(organizationId)}
               className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm transition-all hover:shadow hover:border-primary-300"
@@ -201,7 +201,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
               <div className="font-bold text-gray-900">
                 {activity.contact.name}
                 {/* Seed data uses surname field */}
-                {(activity.contact as any).surname && ` ${(activity.contact as any).surname}`}
+                {activity.contact.surname && ` ${activity.contact.surname}`}
               </div>
               {activity.contact.role && (
                 <div className="text-sm font-medium text-gray-600">

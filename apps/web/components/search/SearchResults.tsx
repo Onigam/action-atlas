@@ -17,7 +17,7 @@ export interface SearchResultsProps {
   executionTimeMs?: number;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
-  fetchNextPage?: () => void;
+  fetchNextPage?: () => Promise<unknown> | void;
 }
 
 export function SearchResults({
@@ -39,8 +39,10 @@ export function SearchResults({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && fetchNextPage) {
-          fetchNextPage();
+        if (entries[0]?.isIntersecting && fetchNextPage && typeof fetchNextPage === 'function') {
+          void (fetchNextPage() as Promise<unknown>).catch((error) => {
+            console.error('Error fetching next page:', error);
+          });
         }
       },
       { threshold: 0.1 }
@@ -144,7 +146,7 @@ export function SearchResults({
       <div className="grid gap-6 md:grid-cols-2">
         {results.map((activity) => (
           <ActivityCard
-            key={activity.activityId || (activity as any)._id}
+            key={activity.activityId || activity._id}
             activity={activity}
             {...(activity.relevanceScore !== undefined && {
               relevanceScore: activity.relevanceScore,

@@ -49,6 +49,7 @@ export const Contact = z.object({
   role: z.string(),
   email: z.string().email(),
   phone: z.string().optional(),
+  surname: z.string().optional(),
 });
 
 export type Contact = z.infer<typeof Contact>;

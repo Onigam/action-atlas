@@ -26,6 +26,12 @@ export type SearchQuery = z.infer<typeof SearchQuery> & {
 export const SearchResult = Activity.extend({
   relevanceScore: z.number().min(0).max(1).optional(),
   distance: z.number().optional(), // in meters
+  // Seed data compatibility fields
+  cuid: z.string().optional(),
+  shortDescription: z.string().optional(),
+  coverImageUrl: z.string().optional(),
+  charity: z.string().optional(),
+  _id: z.string().optional(),
 });
 
 export type SearchResult = z.infer<typeof SearchResult>;
