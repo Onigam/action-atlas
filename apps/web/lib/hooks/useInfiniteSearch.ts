@@ -1,8 +1,7 @@
 'use client';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-
 import type { SearchResponse } from '@action-atlas/types';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { searchActivities, type SearchFilters } from '@/lib/api-client';
 

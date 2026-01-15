@@ -73,11 +73,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     const searchResult = await locationAwareSearch(activitiesCollection, searchOptions);
 
     // Transform results to match SearchResponse format
-    const results = searchResult.results.map((result) => ({
-      ...result.document,
-      relevanceScore: result.relevanceScore,
-      distance: result.distance,
-    }));
+    const results = searchResult.results.map((result) => {
+      // Destructure _id separately to handle unknown type from MongoDB
+      const { _id, ...rest } = result.document;
+      return {
+        ...rest,
+        _id: typeof _id === 'string' ? _id : undefined,
+        relevanceScore: result.relevanceScore,
+        distance: result.distance,
+      };
+    });
 
     const executionTimeMs = Date.now() - startTime;
 
