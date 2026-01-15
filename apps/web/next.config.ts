@@ -3,8 +3,6 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Standalone output for Railway deployment
-  output: 'standalone',
   transpilePackages: [
     '@action-atlas/types',
     '@action-atlas/database',
@@ -12,7 +10,6 @@ const nextConfig: NextConfig = {
   ],
   // Disable typed routes for now - experimental feature causing type issues
   // typedRoutes: true,
-  outputFileTracingRoot: '../..',
   images: {
     remotePatterns: [
       {
