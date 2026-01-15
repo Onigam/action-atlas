@@ -136,11 +136,11 @@ async function loadSeedData(verbose: boolean): Promise<void> {
 
   if (useDocker) {
     // Use Docker to run mongorestore
-    // The seed data is from "thegoodsearch" database, we need to restore it as "actionatlas"
+    // The seed data is from "actionatlas" database, we need to restore it as "actionatlas"
     command = `docker exec -i mongo_vector_main mongorestore --gzip --archive --drop --nsFrom='actionatlas.*' --nsTo='actionatlas.*' < "${SEED_DATA_PATH}"`;
     if (verbose) {
       console.log(chalk.dim('Using Docker container for mongorestore'));
-      console.log(chalk.dim('Restoring thegoodsearch → actionatlas'));
+      console.log(chalk.dim('Restoring actionatlas → actionatlas'));
     }
   } else {
     // Use local mongorestore (if available)
@@ -151,7 +151,7 @@ async function loadSeedData(verbose: boolean): Promise<void> {
     command = `mongorestore --uri="${mongoUri}" --gzip --archive="${SEED_DATA_PATH}" --drop --nsFrom='actionatlas.*' --nsTo='actionatlas.*'`;
     if (verbose) {
       console.log(chalk.dim('Using local mongorestore'));
-      console.log(chalk.dim('Restoring thegoodsearch → actionatlas'));
+      console.log(chalk.dim('Restoring actionatlas → actionatlas'));
     }
   }
 

@@ -13,7 +13,7 @@ Complete DevOps automation suite for Action Atlas MVP development. All scripts a
 - **Status:** ✅ Fully functional
 - **Features:**
   - Automatic Docker detection
-  - Database namespace mapping (thegoodsearch → actionatlas)
+  - Database namespace mapping (actionatlas → actionatlas)
   - Safety prompts before overwriting
   - Data verification after loading
   - Verbose mode for debugging
@@ -176,7 +176,7 @@ Creating organization indexes...
 - This makes scripts work in both local and CI/CD environments
 
 ### 2. Database Namespace Mapping
-- Seed data is from "thegoodsearch" database
+- Seed data is from "actionatlas" database
 - Scripts automatically map to "actionatlas" database
 - Uses `--nsFrom` and `--nsTo` mongorestore flags
 - Maintains collection names: "activities" and "charities"
