@@ -320,22 +320,36 @@ export async function locationAwareSearch(
 
     if (hasValidLocation(locationResult)) {
       const geocodingStart = Date.now();
-      const geocoded = await geocodeFirst({
-        formattedAddress: locationResult.formattedAddress!,
-        language: locationResult.language ?? 'en',
-      });
-      geocodingMs = Date.now() - geocodingStart;
+      try {
+        const geocoded = await geocodeFirst({
+          formattedAddress: locationResult.formattedAddress!,
+          language: locationResult.language ?? 'en',
+        });
+        geocodingMs = Date.now() - geocodingStart;
 
-      if (geocoded) {
-        searchLocation = {
-          latitude: geocoded.latitude,
-          longitude: geocoded.longitude,
-          maxDistance: 50000, // Default 50km for auto-detected locations
-        };
-        detectedLocation = {
-          formattedAddress: geocoded.formattedAddress,
-          coordinates: [geocoded.longitude, geocoded.latitude],
-        };
+        if (geocoded) {
+          searchLocation = {
+            latitude: geocoded.latitude,
+            longitude: geocoded.longitude,
+            maxDistance: 50000, // Default 50km for auto-detected locations
+          };
+          detectedLocation = {
+            formattedAddress: geocoded.formattedAddress,
+            coordinates: [geocoded.longitude, geocoded.latitude],
+          };
+        }
+      } catch (geocodingError) {
+        // Geocoding failed (API down, rate limits, network issues, etc.)
+        // Log the error and gracefully fall back to pure semantic search
+        geocodingMs = Date.now() - geocodingStart;
+        const errorMessage = geocodingError instanceof Error
+          ? geocodingError.message
+          : String(geocodingError);
+        console.warn(
+          `[Location-Aware Search] Geocoding failed for "${locationResult.formattedAddress}", ` +
+          `falling back to semantic search: ${errorMessage}`
+        );
+        // searchLocation remains undefined, so we'll proceed with pure semantic search
       }
     }
   }

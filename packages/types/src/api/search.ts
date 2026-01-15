@@ -9,7 +9,7 @@ export const SearchQuery = z.object({
     .object({
       latitude: z.number().min(-90).max(90),
       longitude: z.number().min(-180).max(180),
-      radius: z.number().positive().max(100000).optional(), // in meters, max 100km
+      radius: z.number().positive().max(500000).optional(), // in meters, max 500km
     })
     .optional(),
   limit: z.number().positive().max(100).default(20),
