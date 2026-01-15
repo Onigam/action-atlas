@@ -6,7 +6,7 @@ import { generateEmbedding } from './embedding';
 import { InMemoryEmbeddingCache, createCacheKey } from './cache';
 import { analyzeLocationQuery, hasValidLocation } from './location-analyzer';
 import { geocodeFirst, isGeocodingAvailable } from './geocoding';
-import { calculateHaversineDistance, isValidCoordinates } from './utils/geo';
+import { calculateHaversineDistance, isValidCoordinates } from '@action-atlas/database';
 
 export interface LocationAwareSearchOptions {
   query: string;
@@ -161,6 +161,7 @@ async function manualVectorSearch(
 
   const documents = await collection
     .find({ ...filter, embedding: { $exists: true, $ne: null } })
+    .limit(1000) // Limit to prevent OOM in local development fallback
     .toArray();
 
   const scored = documents.map((doc: ActivityDocument) => {
@@ -335,9 +336,6 @@ export async function locationAwareSearch(
           formattedAddress: geocoded.formattedAddress,
           coordinates: [geocoded.longitude, geocoded.latitude],
         };
-        console.log(
-          `[Location-Aware Search] Detected location: ${geocoded.formattedAddress} (${geocoded.latitude}, ${geocoded.longitude})`
-        );
       }
     }
   }
