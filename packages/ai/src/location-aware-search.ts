@@ -185,29 +185,28 @@ async function manualVectorSearch(
 
 /**
  * Apply geoNear sorting to a list of activities
+ *
+ * This function sorts activities by a combination of semantic relevance and proximity.
+ * Activities WITH coordinates get a proximity boost based on distance.
+ * Activities WITHOUT coordinates are included but ranked by relevance only (no proximity boost).
+ * No activities are filtered out - this is a SORT, not a filter.
  */
 function applyGeoNearSorting(
   activities: Array<ActivityDocument & { relevanceScore: number }>,
   coordinates: [number, number],
   maxDistance: number,
   limit: number
-): Array<ActivityDocument & { relevanceScore: number; distance: number; finalScore: number }> {
+): Array<ActivityDocument & { relevanceScore: number; distance?: number; finalScore: number }> {
   const [queryLng, queryLat] = coordinates;
 
-  const withDistance = activities
-    .filter((activity) => {
-      // Filter out activities without valid coordinates
-      const actLng = activity.location?.coordinates?.coordinates?.[0];
-      const actLat = activity.location?.coordinates?.coordinates?.[1];
-      return isValidCoordinates(actLat, actLng);
-    })
-    .map((activity) => {
-      const actLng = activity.location!.coordinates!.coordinates![0];
-      const actLat = activity.location!.coordinates!.coordinates![1];
+  const withScores = activities.map((activity) => {
+    const actLng = activity.location?.coordinates?.coordinates?.[0];
+    const actLat = activity.location?.coordinates?.coordinates?.[1];
+    const hasValidCoordinates = isValidCoordinates(actLat, actLng);
 
-      // Use proper Haversine distance calculation
-      const distance = calculateHaversineDistance(queryLat, queryLng, actLat, actLng);
-
+    if (hasValidCoordinates) {
+      // Activity has coordinates - calculate distance and proximity score
+      const distance = calculateHaversineDistance(queryLat, queryLng, actLat!, actLng!);
       const proximityScore = Math.max(0, 1 - distance / maxDistance);
       const finalScore = activity.relevanceScore * 0.7 + proximityScore * 0.3;
 
@@ -216,12 +215,19 @@ function applyGeoNearSorting(
         distance,
         finalScore,
       };
-    });
+    } else {
+      // Activity has no coordinates - use relevance only (no proximity boost)
+      // These will naturally rank lower than nearby activities with same relevance
+      return {
+        ...activity,
+        finalScore: activity.relevanceScore * 0.7, // No proximity boost (0.3 * 0)
+      };
+    }
+  });
 
-  return withDistance
-    .filter((a) => a.distance <= maxDistance)
+  return withScores
     .sort((a, b) => b.finalScore - a.finalScore)
-    .slice(0, limit);
+    .slice(0, limit) as Array<ActivityDocument & { relevanceScore: number; distance?: number; finalScore: number }>;
 }
 
 /**
@@ -421,26 +427,16 @@ export async function locationAwareSearch(
 
     geoNearMs = Date.now() - geoNearStart;
 
-    // If geo-sorting returned results, use them
-    // Otherwise, fall back to semantic results (activities may not have location data)
-    if (geoSortedResults.length > 0) {
-      finalResults = geoSortedResults.map((doc) => ({
+    finalResults = geoSortedResults.map((doc) => {
+      const result: LocationAwareSearchResult = {
         document: doc as ActivityDocument,
         relevanceScore: doc.finalScore,
-        distance: doc.distance,
-      }));
-    } else {
-      // Fallback: no activities had valid coordinates within range
-      // Return semantic results without location filtering
-      console.warn(
-        '[Location-Aware Search] No activities found with valid coordinates within range, ' +
-        'falling back to semantic results'
-      );
-      finalResults = semanticResults.slice(0, limit).map((doc) => ({
-        document: doc as ActivityDocument,
-        relevanceScore: doc.relevanceScore,
-      }));
-    }
+      };
+      if (doc.distance !== undefined) {
+        result.distance = doc.distance;
+      }
+      return result;
+    });
   } else {
     // No location filtering - return semantic results directly
     finalResults = semanticResults.slice(0, limit).map((doc) => ({
