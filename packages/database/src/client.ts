@@ -1,5 +1,4 @@
 import { MongoClient, type Db } from 'mongodb';
-import crypto from 'crypto';
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -20,17 +19,25 @@ export async function connectToDatabase(): Promise<Db> {
     uri.replace(/:[^:]*@/, ':****@')
   );
 
+  // Determine if connecting to MongoDB Atlas (uses mongodb+srv://)
+  const isAtlas = uri.startsWith('mongodb+srv://');
+
   client = new MongoClient(uri, {
     maxPoolSize: 10,
     minPoolSize: 2,
-    serverSelectionTimeoutMS: 5000,
-    // Workaround for "unsafe legacy renegotiation disabled" error in OpenSSL 3.0+
-    // Railway environment uses OpenSSL 3.0+ which can cause TLS handshake errors
-    // with outdated SSL proxies. This option enables legacy server connect.
-    // Reference: https://www.mongodb.com/docs/drivers/node/current/security/tls/
-    secureContext: {
-      secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-    },
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    // TLS is required for MongoDB Atlas connections
+    // For Atlas (mongodb+srv://), TLS is enabled by default
+    // These options help resolve SSL handshake issues in containerized environments
+    ...(isAtlas && {
+      tls: true,
+      // Retry writes to handle transient network issues
+      retryWrites: true,
+      // Use majority write concern for consistency
+      w: 'majority',
+    }),
   });
 
   try {
