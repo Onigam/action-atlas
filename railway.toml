@@ -10,6 +10,3 @@ restartPolicyMaxRetries = 3
 [env]
 NODE_ENV = "production"
 PORT = "3000"
-# Fix for OpenSSL 3.x security level incompatibility with MongoDB Atlas
-# Ubuntu 24.04+ uses SECLEVEL=2 by default which causes SSL alert 80 errors
-OPENSSL_CONF = "/app/config/openssl.cnf"
