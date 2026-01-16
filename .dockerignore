@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+**/node_modules
+
+# build artifacts
+.next
+dist
+out
+build
+
+# misc
+.git
+.gitignore
+Dockerfile*
+railway.toml
+.env*
