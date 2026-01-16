@@ -1,5 +1,6 @@
 import { MongoClient, type Db } from 'mongodb';
 
+// MongoDB client singleton for connection pooling
 let client: MongoClient | null = null;
 let db: Db | null = null;
 
