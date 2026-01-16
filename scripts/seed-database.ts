@@ -35,6 +35,7 @@ config({ path: path.join(process.cwd(), '.env.local') });
 const SEED_DATA_PATH = path.join(process.cwd(), 'data', 'seed-dataset.agz');
 
 interface CliArgs {
+  nodocker: boolean;
   force: boolean;
   verbose: boolean;
   help: boolean;
@@ -43,6 +44,7 @@ interface CliArgs {
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
   return {
+    nodocker: args.includes('--nodocker') || args.includes('-nd'),
     force: args.includes('--force') || args.includes('-f'),
     verbose: args.includes('--verbose') || args.includes('-v'),
     help: args.includes('--help') || args.includes('-h'),
@@ -126,11 +128,11 @@ async function dropExistingData(verbose: boolean): Promise<void> {
   }
 }
 
-async function loadSeedData(verbose: boolean): Promise<void> {
+async function loadSeedData(verbose: boolean, nodocker: boolean): Promise<void> {
   console.log(chalk.blue('Loading seed data from archive...'));
 
   // Check if we should use Docker or local mongorestore
-  const useDocker = await checkDockerAvailable();
+  const useDocker = nodocker ? false : await checkDockerAvailable();
 
   let command: string;
 
@@ -152,15 +154,12 @@ async function loadSeedData(verbose: boolean): Promise<void> {
     if (verbose) {
       console.log(chalk.dim('Using local mongorestore'));
       console.log(chalk.dim('Restoring actionatlas → actionatlas'));
+      console.log(chalk.dim(`Command: ${command}`));
     }
   }
 
   try {
-    const { stdout, stderr } = await execAsync(command);
-
-    if (verbose && stdout) {
-      console.log(chalk.dim(stdout));
-    }
+    const { stderr } = await execAsync(command);
 
     if (stderr && !stderr.includes('done') && !stderr.includes('preparing collections')) {
       console.error(chalk.yellow('Warning:'), stderr);
@@ -220,6 +219,28 @@ async function runDataMigration(verbose: boolean): Promise<void> {
 
   const collection = activities();
   const db = getDatabase();
+  console.log(chalk.dim(`Using server - database - collection : ${db.databaseName} - ${collection.collectionName}`));
+  const uri = process.env['MONGODB_URI'];
+  console.log(chalk.dim(`MongoDB URI: ${uri}`));
+
+  // check if db is using the expected database from the expected environment
+  if (!uri || !uri.includes(db.databaseName)) {
+    throw new Error(
+      `Database URI does not match expected database name: ${db.databaseName}`
+    );
+  }
+
+  // we need to remove the index on cuid to perform migration
+  try {
+    await collection.dropIndex('cuid_1');
+    if (verbose) {
+      console.log(chalk.dim('  Dropped index on cuid'));
+    }
+  } catch (error) {
+    if (verbose) {
+      console.log(chalk.dim('  No index on cuid to drop'));
+    }
+  }
 
   // Find documents that need migration
   const query = {
@@ -237,6 +258,7 @@ async function runDataMigration(verbose: boolean): Promise<void> {
   };
 
   const documents = await collection.find(query).toArray();
+  console.log(chalk.dim(`  Found ${documents.length} documents needing migration check`));
 
   if (documents.length === 0) {
     if (verbose) {
@@ -271,17 +293,12 @@ async function runDataMigration(verbose: boolean): Promise<void> {
         updateOp.$unset = unsetFields;
       }
 
-      // Execute update
       await collection.updateOne({ _id: doc._id }, updateOp);
       migratedCount++;
-
-      if (verbose) {
-        console.log(chalk.dim(`  ✓ Migrated: ${doc._id}`));
-      }
     } catch (error) {
       errorCount++;
       if (verbose) {
-        console.log(chalk.dim(`  ✗ Error migrating ${doc._id}`));
+        console.log(chalk.dim(`  ✗ Error migrating ${doc._id} : ${error} `));
       }
     }
   }
@@ -363,7 +380,7 @@ async function main(): Promise<void> {
     }
 
     // Load seed data
-    await loadSeedData(args.verbose);
+    await loadSeedData(args.verbose, args.nodocker);
     console.log();
 
     // Verify loaded data
