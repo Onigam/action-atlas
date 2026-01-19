@@ -31,7 +31,8 @@
     "migrate-data": "tsx --tsconfig scripts/tsconfig.json scripts/migrate-legacy-data.ts",
     "db:status": "tsx --tsconfig scripts/tsconfig.json scripts/check-database.ts",
     "db:reset": "tsx --tsconfig scripts/tsconfig.json scripts/reset-database.ts",
-    "convert-draftjs": "tsx --tsconfig scripts/tsconfig.json scripts/convert-draftjs-to-markdown.ts"
+    "convert-draftjs": "tsx --tsconfig scripts/tsconfig.json scripts/convert-draftjs-to-markdown.ts",
+    "manage-vector-index": "tsx --tsconfig scripts/tsconfig.json scripts/manage-vector-index.ts"
   },
   "devDependencies": {
     "@google/generative-ai": "^0.24.1",

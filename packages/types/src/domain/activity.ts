@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Location } from './location';
+import { embeddable } from '../utils/embeddable';
 
 export const ActivityCategory = z.enum([
   'education',
@@ -56,11 +57,11 @@ export type Contact = z.infer<typeof Contact>;
 
 export const Activity = z.object({
   activityId: z.string(),
-  title: z.string(),
-  description: z.string(),
+  title: embeddable(z.string()),
+  description: embeddable(z.string()),
   organizationId: z.string(),
-  category: ActivityCategory,
-  skills: z.array(Skill),
+  category: embeddable(ActivityCategory),
+  skills: embeddable(z.array(Skill)),
   location: z.custom<Location>(),
   timeCommitment: TimeCommitment,
   contact: Contact,

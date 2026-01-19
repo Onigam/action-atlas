@@ -1,7 +1,13 @@
 import { openai } from '@ai-sdk/openai';
 import { embed, embedMany } from 'ai';
 
-import type { Embedding } from '@action-atlas/types';
+import {
+  type Embedding,
+  Activity,
+  Organization,
+  getEmbeddableFields,
+  extractEmbeddableValues,
+} from '@action-atlas/types';
 
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 
@@ -70,6 +76,15 @@ export function normalizeText(text: string): string {
     .toLowerCase();
 }
 
+/**
+ * Prepares an activity for embedding using schema-defined embeddable fields.
+ * Uses the Activity schema to automatically detect which fields should be embedded.
+ *
+ * Also includes organization info and location if provided (for contextual relevance).
+ *
+ * @param activity - The activity object to prepare for embedding
+ * @returns A concatenated string of all embeddable field values
+ */
 export function prepareActivityForEmbedding(activity: {
   title: string;
   description: string;
@@ -78,26 +93,77 @@ export function prepareActivityForEmbedding(activity: {
   category?: string;
   location?: { address?: { city?: string; country?: string } };
 }): string {
-  // Handle skills - can be array of objects or comma-separated string
-  let skillsText: string | undefined;
-  if (activity.skills) {
-    if (typeof activity.skills === 'string') {
-      skillsText = activity.skills;
-    } else if (Array.isArray(activity.skills)) {
-      skillsText = activity.skills.map((s) => s.name).join(', ');
-    }
+  // Extract embeddable fields from the Activity schema
+  const embeddableValues = extractEmbeddableValues(
+    Activity,
+    activity as Record<string, unknown>
+  );
+
+  // Add organization context (not part of Activity schema but useful for search)
+  if (activity.organization?.name) {
+    embeddableValues.push(activity.organization.name);
+  }
+  if (activity.organization?.mission) {
+    embeddableValues.push(activity.organization.mission);
   }
 
-  const parts = [
-    activity.title,
-    activity.description,
-    activity.organization?.name,
-    activity.organization?.mission,
-    skillsText,
-    activity.category,
-    activity.location?.address?.city,
-    activity.location?.address?.country,
-  ].filter(Boolean);
+  // Add location context (city and country are useful for search)
+  if (activity.location?.address?.city) {
+    embeddableValues.push(activity.location.address.city);
+  }
+  if (activity.location?.address?.country) {
+    embeddableValues.push(activity.location.address.country);
+  }
 
-  return parts.join('. ');
+  return embeddableValues.filter(Boolean).join('. ');
+}
+
+/**
+ * Prepares an organization for embedding using schema-defined embeddable fields.
+ * Uses the Organization schema to automatically detect which fields should be embedded.
+ *
+ * @param organization - The organization object to prepare for embedding
+ * @returns A concatenated string of all embeddable field values
+ */
+export function prepareOrganizationForEmbedding(organization: {
+  name: string;
+  description: string;
+  mission?: string;
+  location?: { address?: { city?: string; country?: string } };
+}): string {
+  // Extract embeddable fields from the Organization schema
+  const embeddableValues = extractEmbeddableValues(
+    Organization,
+    organization as Record<string, unknown>
+  );
+
+  // Add location context (city and country are useful for search)
+  if (organization.location?.address?.city) {
+    embeddableValues.push(organization.location.address.city);
+  }
+  if (organization.location?.address?.country) {
+    embeddableValues.push(organization.location.address.country);
+  }
+
+  return embeddableValues.filter(Boolean).join('. ');
+}
+
+/**
+ * Gets the list of embeddable field names from the Activity schema.
+ * Useful for documentation or debugging.
+ *
+ * @returns Array of field names marked as embeddable in the Activity schema
+ */
+export function getActivityEmbeddableFields(): string[] {
+  return getEmbeddableFields(Activity);
+}
+
+/**
+ * Gets the list of embeddable field names from the Organization schema.
+ * Useful for documentation or debugging.
+ *
+ * @returns Array of field names marked as embeddable in the Organization schema
+ */
+export function getOrganizationEmbeddableFields(): string[] {
+  return getEmbeddableFields(Organization);
 }
