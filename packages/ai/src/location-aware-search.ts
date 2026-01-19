@@ -411,6 +411,9 @@ export async function locationAwareSearch(
   const poolSize = 200;
   const candidateLimit = searchLocation ? Math.max(numCandidates, 500) : poolSize;
 
+  // MongoDB requires numCandidates >= limit for $vectorSearch
+  const effectiveNumCandidates = Math.max(numCandidates, candidateLimit);
+
   // Build options objects, only including category if defined
   const pipelineOptions: {
     numCandidates: number;
@@ -418,7 +421,7 @@ export async function locationAwareSearch(
     category?: string | string[];
     isActive: boolean;
   } = {
-    numCandidates,
+    numCandidates: effectiveNumCandidates,
     limit: candidateLimit,
     isActive,
   };
