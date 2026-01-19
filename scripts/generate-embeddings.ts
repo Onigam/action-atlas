@@ -24,6 +24,7 @@ import {
   disconnectFromDatabase,
   findActivitiesWithoutEmbeddingsWithOrganization,
   updateActivityEmbedding,
+  clearAllEmbeddings,
 } from '@action-atlas/database';
 
 import {
@@ -47,6 +48,7 @@ interface CliArgs {
   verbose: boolean;
   help: boolean;
   delay: number;
+  reset: boolean;
 }
 
 function parseArgs(): CliArgs {
@@ -62,6 +64,7 @@ function parseArgs(): CliArgs {
     delay: delayIndex !== -1 ? parseInt(args[delayIndex + 1] ?? '1000', 10) : 1000,
     verbose: args.includes('--verbose') || args.includes('-v'),
     help: args.includes('--help') || args.includes('-h'),
+    reset: args.includes('--reset'),
   };
 }
 
@@ -76,6 +79,7 @@ ${chalk.bold('Options:')}
   --batch <n>      Number of activities to process per batch (default: 50)
   --limit <n>      Maximum number of activities to process (default: all)
   --delay <ms>     Delay between batches in milliseconds (default: 1000)
+  --reset          Clear all existing embeddings before generating new ones
   --verbose, -v    Show detailed output
   --help, -h       Show this help message
 
@@ -84,6 +88,10 @@ ${chalk.bold('Description:')}
   Uses text-embedding-3-small model (1536 dimensions).
 
   ${chalk.yellow('Note:')} Requires OPENAI_API_KEY environment variable to be set.
+
+${chalk.bold('Reset Mode:')}
+  Use --reset to clear all existing embeddings and recalculate from scratch.
+  This is useful when you change the embedding calculation logic.
 
 ${chalk.bold('Cost Estimation:')}
   text-embedding-3-small: $0.02 per 1M tokens
@@ -95,7 +103,8 @@ ${chalk.bold('Rate Limits:')}
   Script includes automatic delays between batches
 
 ${chalk.bold('Examples:')}
-  pnpm generate-embeddings              # Process all activities
+  pnpm generate-embeddings              # Process activities without embeddings
+  pnpm generate-embeddings --reset      # Clear all embeddings and regenerate
   pnpm generate-embeddings --batch 100  # Larger batches (faster)
   pnpm generate-embeddings --limit 50   # Test with 50 activities
   pnpm generate-embeddings -v           # Verbose output
@@ -138,6 +147,9 @@ async function main(): Promise<void> {
     if (args.limit) {
       console.log(chalk.dim(`Limit: ${args.limit} activities`));
     }
+    if (args.reset) {
+      console.log(chalk.dim(`Reset mode: enabled (will clear all embeddings first)`));
+    }
     console.log();
   }
 
@@ -162,6 +174,13 @@ async function main(): Promise<void> {
     console.log(chalk.blue('Connecting to MongoDB...'));
     await connectToDatabase();
     console.log(chalk.green('✓ Connected to MongoDB\n'));
+
+    // Reset mode: clear all existing embeddings
+    if (args.reset) {
+      console.log(chalk.yellow('⚠ Reset mode enabled - clearing all existing embeddings...'));
+      const clearedCount = await clearAllEmbeddings();
+      console.log(chalk.green(`✓ Cleared embeddings from ${clearedCount} activities\n`));
+    }
 
     // Find activities without embeddings (with organization data)
     console.log(chalk.blue('Finding activities without embeddings (with organization lookup)...'));

@@ -1,10 +1,9 @@
-import type { ActivityCategory } from '@action-atlas/types';
-
 /**
- * Activity categories with display names and icons
+ * Known activity categories with display names and descriptions.
+ * This is used for displaying labels - unknown categories will show their raw value.
  */
 export const ACTIVITY_CATEGORIES: Record<
-  ActivityCategory,
+  string,
   { label: string; description: string }
 > = {
   education: {

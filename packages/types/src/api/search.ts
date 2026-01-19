@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { Activity, ActivityCategory } from '../domain/activity';
+import { Activity } from '../domain/activity';
 
 export const SearchQuery = z.object({
   query: z.string().min(1).max(500),
-  category: z.array(ActivityCategory).optional(),
+  category: z.array(z.string()).optional(),
   location: z
     .object({
       latitude: z.number().min(-90).max(90),

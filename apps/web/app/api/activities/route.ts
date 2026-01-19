@@ -45,10 +45,18 @@ export async function GET(request: Request): Promise<NextResponse> {
     // Build filter
     const filter: Record<string, unknown> = {};
 
-    // Category filter
+    // Category filter - supports filtering by one or more categories
+    // Activities match if they have ANY of the specified categories
     const category = searchParams.get('category');
     if (category) {
-      filter['category'] = category;
+      const categories = category.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      if (categories.length === 1) {
+        // Single category - match activities that include this category
+        filter['category'] = categories[0];
+      } else {
+        // Multiple categories - match activities that include any of these
+        filter['category'] = { $in: categories };
+      }
     }
 
     // Organization filter
@@ -91,7 +99,7 @@ export async function GET(request: Request): Promise<NextResponse> {
  *   title: string,
  *   description: string,
  *   organizationId: string,
- *   category: ActivityCategory,
+ *   category: ActivityCategory[],
  *   skills: Array<{ name: string, level?: string }>,
  *   location: Location,
  *   timeCommitment: TimeCommitment,
@@ -119,7 +127,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       activityData.title,
       activityData.description,
       activityData.skills.map((s) => s.name).join(', '),
-      activityData.category,
+      activityData.category.join(', '),
       activityData.location.address.city,
       activityData.location.address.country,
     ]

@@ -297,6 +297,27 @@ export async function findActivitiesWithOutdatedEmbeddings(
 }
 
 /**
+ * Clear all embeddings from activities
+ * Useful for recalculating embeddings from scratch
+ */
+export async function clearAllEmbeddings(): Promise<number> {
+  const collection = activities();
+
+  const result = await collection.updateMany(
+    { embedding: { $exists: true } },
+    {
+      $unset: {
+        embedding: '',
+        embeddingModel: '',
+        embeddingUpdatedAt: '',
+      },
+    }
+  );
+
+  return result.modifiedCount;
+}
+
+/**
  * Bulk update activities
  */
 export async function bulkUpdateActivities(

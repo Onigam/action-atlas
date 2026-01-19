@@ -90,7 +90,7 @@ export function prepareActivityForEmbedding(activity: {
   description: string;
   organization?: { name?: string; mission?: string };
   skills?: Array<{ name: string }> | string;
-  category?: string;
+  category?: string | string[];
   location?: { address?: { city?: string; country?: string } };
 }): string {
   // Extract embeddable fields from the Activity schema

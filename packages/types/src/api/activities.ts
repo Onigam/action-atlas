@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import {
   Activity,
-  ActivityCategory,
   Contact,
   Skill,
   TimeCommitment,
@@ -13,7 +12,7 @@ export const CreateActivityRequest = z.object({
   title: z.string().min(5).max(200),
   description: z.string().min(50).max(5000),
   organizationId: z.string(),
-  category: ActivityCategory,
+  category: z.array(z.string()).min(1),
   skills: z.array(Skill),
   location: Location,
   timeCommitment: TimeCommitment,

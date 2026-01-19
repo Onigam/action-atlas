@@ -25,10 +25,16 @@ export function ActivityCard({
   relevanceScore,
   distance,
 }: ActivityCardProps) {
-  // Get category label with fallback to 'Other' if category is missing
-  const categoryLabel = activity.category
-    ? (ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category)
-    : 'Other';
+  // Get category labels - handle both array and legacy single value
+  const categories: string[] = Array.isArray(activity.category)
+    ? activity.category
+    : activity.category
+      ? [activity.category]
+      : [];
+
+  const categoryLabels = categories.map(
+    (cat) => ACTIVITY_CATEGORIES[cat]?.label ?? cat
+  );
 
   // Seed data uses cuid instead of activityId
   const activityId = activity.activityId || activity.cuid || activity._id || '';
@@ -72,9 +78,13 @@ export function ActivityCard({
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Category */}
-          <div>
-            <Badge variant="secondary">{categoryLabel}</Badge>
+          {/* Categories */}
+          <div className="flex flex-wrap gap-1">
+            {categoryLabels.map((label, index) => (
+              <Badge key={index} variant="secondary">
+                {label}
+              </Badge>
+            ))}
           </div>
 
           {/* Location */}
