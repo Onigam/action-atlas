@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Location } from './location';
+import { embeddable } from '../utils/embeddable';
 
 export const OrganizationStatus = z.enum([
   'pending',
@@ -13,9 +14,9 @@ export type OrganizationStatus = z.infer<typeof OrganizationStatus>;
 
 export const Organization = z.object({
   organizationId: z.string(),
-  name: z.string(),
-  description: z.string(),
-  mission: z.string().optional(),
+  name: embeddable(z.string()),
+  description: embeddable(z.string()),
+  mission: embeddable(z.string().optional()),
   location: z.custom<Location>(),
   website: z.string().url().optional(),
   email: z.string().email(),

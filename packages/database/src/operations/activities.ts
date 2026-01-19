@@ -452,3 +452,164 @@ export async function findActivitiesByIds(
     })
     .toArray();
 }
+
+/**
+ * Activity with organization/charity info for embedding generation
+ */
+export interface ActivityWithOrganization extends ActivityDocument {
+  organization?: {
+    name?: string;
+    description?: string;
+    mission?: string;
+  };
+  // Legacy field from seed data
+  charity?: string;
+}
+
+/**
+ * Find activities without embeddings with their organization info
+ * Uses MongoDB $lookup to join activities with charities/organizations collection
+ *
+ * @param limit - Maximum number of activities to return
+ * @returns Activities with organization info for embedding generation
+ */
+export async function findActivitiesWithoutEmbeddingsWithOrganization(
+  limit: number = 100
+): Promise<ActivityWithOrganization[]> {
+  const collection = activities();
+
+  const pipeline = [
+    // Match activities without embeddings
+    {
+      $match: {
+        $or: [
+          { embedding: { $exists: false } },
+          { embedding: { $size: 0 } },
+          { embedding: null },
+        ],
+      },
+    },
+    // Limit before lookup for efficiency
+    { $limit: limit },
+    // Lookup organization by organizationId or charity field
+    {
+      $lookup: {
+        from: 'charities', // The organizations collection is named 'charities'
+        let: {
+          orgId: '$organizationId',
+          charityName: '$charity',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $or: [
+                  { $eq: ['$organizationId', '$$orgId'] },
+                  { $eq: ['$cuid', '$$orgId'] },
+                  { $eq: [{ $toString: '$_id' }, '$$orgId'] },
+                  { $eq: ['$name', '$$charityName'] },
+                ],
+              },
+            },
+          },
+          // Only project fields needed for embedding
+          {
+            $project: {
+              name: 1,
+              description: 1,
+              mission: 1,
+            },
+          },
+        ],
+        as: 'organizationData',
+      },
+    },
+    // Unwind organization (optional - keep activity even without org)
+    {
+      $addFields: {
+        organization: { $arrayElemAt: ['$organizationData', 0] },
+      },
+    },
+    // Remove the temporary array field
+    {
+      $project: {
+        organizationData: 0,
+      },
+    },
+  ];
+
+  const results = await collection
+    .aggregate<ActivityWithOrganization>(pipeline)
+    .toArray();
+
+  return results;
+}
+
+/**
+ * Find all activities with their organization info for embedding regeneration
+ * Uses MongoDB $lookup to join activities with charities/organizations collection
+ *
+ * @param limit - Maximum number of activities to return
+ * @param skip - Number of activities to skip (for pagination)
+ * @returns Activities with organization info for embedding generation
+ */
+export async function findActivitiesWithOrganization(
+  limit: number = 100,
+  skip: number = 0
+): Promise<ActivityWithOrganization[]> {
+  const collection = activities();
+
+  const pipeline = [
+    // Skip and limit for pagination
+    { $skip: skip },
+    { $limit: limit },
+    // Lookup organization by organizationId or charity field
+    {
+      $lookup: {
+        from: 'charities',
+        let: {
+          orgId: '$organizationId',
+          charityName: '$charity',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $or: [
+                  { $eq: ['$organizationId', '$$orgId'] },
+                  { $eq: ['$cuid', '$$orgId'] },
+                  { $eq: [{ $toString: '$_id' }, '$$orgId'] },
+                  { $eq: ['$name', '$$charityName'] },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              description: 1,
+              mission: 1,
+            },
+          },
+        ],
+        as: 'organizationData',
+      },
+    },
+    {
+      $addFields: {
+        organization: { $arrayElemAt: ['$organizationData', 0] },
+      },
+    },
+    {
+      $project: {
+        organizationData: 0,
+      },
+    },
+  ];
+
+  const results = await collection
+    .aggregate<ActivityWithOrganization>(pipeline)
+    .toArray();
+
+  return results;
+}

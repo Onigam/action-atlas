@@ -9,3 +9,6 @@ export * from './api/activities';
 
 // Vector types
 export * from './vector/embeddings';
+
+// Utility types for embeddable fields
+export * from './utils/embeddable';

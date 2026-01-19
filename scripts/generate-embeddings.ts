@@ -22,7 +22,7 @@ import { config } from 'dotenv';
 import {
   connectToDatabase,
   disconnectFromDatabase,
-  findActivitiesWithoutEmbeddings,
+  findActivitiesWithoutEmbeddingsWithOrganization,
   updateActivityEmbedding,
 } from '@action-atlas/database';
 
@@ -163,10 +163,10 @@ async function main(): Promise<void> {
     await connectToDatabase();
     console.log(chalk.green('✓ Connected to MongoDB\n'));
 
-    // Find activities without embeddings
-    console.log(chalk.blue('Finding activities without embeddings...'));
+    // Find activities without embeddings (with organization data)
+    console.log(chalk.blue('Finding activities without embeddings (with organization lookup)...'));
     const limit = args.limit ?? 10000; // Reasonable default
-    const activities = await findActivitiesWithoutEmbeddings(limit);
+    const activities = await findActivitiesWithoutEmbeddingsWithOrganization(limit);
 
     if (activities.length === 0) {
       console.log(chalk.green('✓ All activities already have embeddings!'));

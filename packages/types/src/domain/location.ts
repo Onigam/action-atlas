@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
+import { embeddable } from '../utils/embeddable';
+
 export const Address = z.object({
   street: z.string().optional(),
-  city: z.string(),
+  city: embeddable(z.string()),
   state: z.string().optional(),
   postalCode: z.string().optional(),
-  country: z.string(),
+  country: embeddable(z.string()),
 });
 
 export type Address = z.infer<typeof Address>;
