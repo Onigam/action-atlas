@@ -113,6 +113,7 @@ async function migrateData(args: CliArgs): Promise<void> {
         { timeCommitment: { $exists: false } },
         { contact: { $exists: false } },
         { category: { $exists: false } },
+        { causes: { $exists: true } }, // has causes field to migrate
         { searchableText: { $exists: false } },
       ],
     };
