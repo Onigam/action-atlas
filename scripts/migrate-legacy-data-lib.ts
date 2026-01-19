@@ -23,12 +23,44 @@ export interface LegacyDocument {
   skills?: string | Array<{ name: string; level?: string }>;
   timeCommitment?: unknown;
   contact?: unknown;
-  category?: string;
+  category?: string | string[];
+  causes?: string;
   isActive?: boolean;
   searchableText?: string;
   createdAt?: Date;
   updatedAt?: Date;
   [key: string]: unknown;
+}
+
+/**
+ * Converts causes string and/or existing category to a category array.
+ * Keeps the original values as-is without any mapping or normalization.
+ */
+function parseCausesToCategoryArray(causes?: string, existingCategory?: string | string[]): string[] {
+  const categories: Set<string> = new Set();
+
+  // Parse causes string (comma-separated) - keep original values
+  if (causes && typeof causes === 'string') {
+    const causeList = causes.split(',').map(c => c.trim()).filter(c => c.length > 0);
+    for (const cause of causeList) {
+      categories.add(cause);
+    }
+  }
+
+  // Parse existing category field - keep original values
+  if (existingCategory) {
+    if (Array.isArray(existingCategory)) {
+      for (const cat of existingCategory) {
+        if (cat && cat.trim()) {
+          categories.add(cat.trim());
+        }
+      }
+    } else if (typeof existingCategory === 'string' && existingCategory.trim()) {
+      categories.add(existingCategory.trim());
+    }
+  }
+
+  return Array.from(categories);
 }
 
 export interface TransformResult {
@@ -171,9 +203,18 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     }
   }
 
-  // Set default category
-  if (!doc.category) {
-    updates.category = 'other';
+  // Convert causes string and/or category to category array
+  // Only update if we have causes to migrate or category needs to become an array
+  if (doc.causes || (doc.category && !Array.isArray(doc.category))) {
+    const categoryArray = parseCausesToCategoryArray(doc.causes, doc.category);
+    if (categoryArray.length > 0) {
+      updates.category = categoryArray;
+    }
+  }
+
+  // Clean up old causes field
+  if (cleanup && doc.causes) {
+    fieldsToUnset.push('causes');
   }
 
   // Set default isActive

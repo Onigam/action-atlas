@@ -25,8 +25,16 @@ export interface ActivityDetailProps {
 }
 
 export function ActivityDetail({ activity }: ActivityDetailProps) {
-  const categoryLabel =
-    ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category;
+  // Get category labels - handle both array and legacy single value
+  const categories: string[] = Array.isArray(activity.category)
+    ? activity.category
+    : activity.category
+      ? [activity.category]
+      : [];
+
+  const categoryLabels = categories.map(
+    (cat) => ACTIVITY_CATEGORIES[cat]?.label ?? cat
+  );
 
   // Seed data uses shortDescription field
   const description = activity.shortDescription || activity.description;
@@ -74,10 +82,12 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       {/* Header */}
       <div className="space-y-6 rounded-2xl bg-white p-8 shadow-sm border border-gray-200">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge variant="primary" className="text-sm">
-              {categoryLabel}
-            </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            {categoryLabels.map((label, index) => (
+              <Badge key={index} variant="primary" className="text-sm">
+                {label}
+              </Badge>
+            ))}
             {activity.timeCommitment?.isFlexible && (
               <Badge variant="secondary" className="text-sm">
                 Flexible Schedule

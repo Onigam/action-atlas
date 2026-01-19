@@ -3,21 +3,9 @@ import { z } from 'zod';
 import type { Location } from './location';
 import { embeddable } from '../utils/embeddable';
 
-export const ActivityCategory = z.enum([
-  'education',
-  'environment',
-  'health',
-  'social-services',
-  'arts-culture',
-  'animal-welfare',
-  'community-development',
-  'youth',
-  'seniors',
-  'technology',
-  'other',
-]);
-
-export type ActivityCategory = z.infer<typeof ActivityCategory>;
+// Category is now a dynamic string - no enum restriction
+// Categories are driven by the data (e.g., from causes field in seed data)
+export type ActivityCategory = string;
 
 export const SkillLevel = z.enum([
   'beginner',
@@ -60,7 +48,7 @@ export const Activity = z.object({
   title: embeddable(z.string()),
   description: embeddable(z.string()),
   organizationId: z.string(),
-  category: embeddable(ActivityCategory),
+  category: embeddable(z.array(z.string())),
   skills: embeddable(z.array(Skill)),
   location: z.custom<Location>(),
   timeCommitment: TimeCommitment,

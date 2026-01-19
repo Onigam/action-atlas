@@ -73,7 +73,7 @@ export async function GET(
  * {
  *   title?: string,
  *   description?: string,
- *   category?: ActivityCategory,
+ *   category?: ActivityCategory[],
  *   skills?: Array<{ name: string, level?: string }>,
  *   location?: Location,
  *   timeCommitment?: TimeCommitment,
@@ -113,11 +113,12 @@ export async function PATCH(
     const contentChanged = contentFields.some((field) => field in updateData);
 
     if (contentChanged) {
+      const categoryArray = updateData.category ?? existingActivity.category;
       const searchableText = [
         updateData.title ?? existingActivity.title,
         updateData.description ?? existingActivity.description,
         (updateData.skills ?? existingActivity.skills).map((s) => s.name).join(', '),
-        updateData.category ?? existingActivity.category,
+        Array.isArray(categoryArray) ? categoryArray.join(', ') : categoryArray,
         (updateData.location ?? existingActivity.location).address.city,
         (updateData.location ?? existingActivity.location).address.country,
       ]
