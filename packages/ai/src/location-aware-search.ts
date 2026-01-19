@@ -11,6 +11,7 @@ import { calculateHaversineDistance, isValidCoordinates } from '@action-atlas/da
 export interface LocationAwareSearchOptions {
   query: string;
   limit?: number;
+  offset?: number;
   numCandidates?: number;
   category?: string | string[];
   isActive?: boolean;
@@ -283,6 +284,9 @@ export async function locationAwareSearch(
   if (options.limit && (options.limit <= 0 || options.limit > 100)) {
     throw new Error('Limit must be between 1 and 100');
   }
+  if (options.offset && options.offset < 0) {
+    throw new Error('Offset must be non-negative');
+  }
   if (options.numCandidates && (options.numCandidates <= 0 || options.numCandidates > 1000)) {
     throw new Error('numCandidates must be between 1 and 1000');
   }
@@ -303,6 +307,7 @@ export async function locationAwareSearch(
   const {
     query,
     limit = 20,
+    offset = 0,
     numCandidates = 100,
     category,
     isActive = true,
@@ -401,9 +406,10 @@ export async function locationAwareSearch(
   const vectorSearchStart = Date.now();
   let semanticResults: Array<ActivityDocument & { relevanceScore: number }>;
 
-  // Get MORE candidates when location is detected to include nearby activities
-  // that might not rank high semantically but are geographically relevant
-  const candidateLimit = searchLocation ? Math.max(numCandidates, 500) : limit;
+  // Fetch a larger pool of results (200) to support pagination
+  // When location is detected, get even more candidates to include nearby activities
+  const poolSize = 200;
+  const candidateLimit = searchLocation ? Math.max(numCandidates, 500) : poolSize;
 
   // Build options objects, only including category if defined
   const pipelineOptions: {
@@ -455,21 +461,22 @@ export async function locationAwareSearch(
 
   // 4. Apply geo-proximity sorting if location is available
   const postProcessingStart = Date.now();
-  let finalResults: LocationAwareSearchResult[];
+  let allResults: LocationAwareSearchResult[];
 
   if (searchLocation && semanticResults.length > 0) {
     const geoNearStart = Date.now();
 
+    // Get all results sorted by geo-proximity (don't limit yet for pagination)
     const geoSortedResults = applyGeoNearSorting(
       semanticResults,
       [searchLocation.longitude, searchLocation.latitude],
       searchLocation.maxDistance,
-      limit
+      poolSize // Get full pool, we'll paginate later
     );
 
     geoNearMs = Date.now() - geoNearStart;
 
-    finalResults = geoSortedResults.map((doc) => {
+    allResults = geoSortedResults.map((doc) => {
       const result: LocationAwareSearchResult = {
         document: doc as ActivityDocument,
         relevanceScore: doc.finalScore,
@@ -481,11 +488,15 @@ export async function locationAwareSearch(
     });
   } else {
     // No location filtering - return semantic results directly
-    finalResults = semanticResults.slice(0, limit).map((doc) => ({
+    allResults = semanticResults.map((doc) => ({
       document: doc as ActivityDocument,
       relevanceScore: doc.relevanceScore,
     }));
   }
+
+  // Apply pagination (offset/limit)
+  const totalResults = allResults.length;
+  const paginatedResults = allResults.slice(offset, offset + limit);
 
   const postProcessingMs = Date.now() - postProcessingStart;
   const executionTimeMs = Date.now() - startTime;
@@ -510,8 +521,8 @@ export async function locationAwareSearch(
   }
 
   return {
-    results: finalResults,
-    total: finalResults.length,
+    results: paginatedResults,
+    total: totalResults,
     executionTimeMs,
     metadata,
   };
@@ -526,6 +537,7 @@ export function searchQueryToLocationAwareOptions(
   const options: LocationAwareSearchOptions = {
     query: query.query,
     limit: query.limit,
+    offset: query.offset,
     autoDetectLocation: true, // Enable auto-detection by default
   };
 
