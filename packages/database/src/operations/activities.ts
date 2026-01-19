@@ -40,7 +40,7 @@ export async function findActivityById(
 ): Promise<ActivityDocument | null> {
   const collection = activities();
 
-  // Try both MongoDB ObjectId and business activityId
+  // Try MongoDB ObjectId, business activityId, and cuid
   let filter: Filter<ActivityDocument>;
 
   if (ObjectId.isValid(id)) {
@@ -48,10 +48,16 @@ export async function findActivityById(
       $or: [
         { _id: new ObjectId(id) },
         { activityId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { activityId: id };
+    filter = {
+      $or: [
+        { activityId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   return await collection.findOne(filter);
@@ -156,10 +162,16 @@ export async function updateActivity(
       $or: [
         { _id: new ObjectId(id) },
         { activityId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { activityId: id };
+    filter = {
+      $or: [
+        { activityId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   const updateDoc: UpdateFilter<ActivityDocument> = {
@@ -191,11 +203,17 @@ export async function updateActivityEmbedding(
       $or: [
         { _id: new ObjectId(id) },
         { activityId: id },
+        { cuid: id },
       ],
     };
   } else {
-    // If not a valid ObjectId, assume it's activityId
-    filter = { activityId: id };
+    // If not a valid ObjectId, try activityId or cuid
+    filter = {
+      $or: [
+        { activityId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   const updateDoc: UpdateFilter<ActivityDocument> = {
@@ -229,10 +247,16 @@ export async function deleteActivity(
       $or: [
         { _id: new ObjectId(id) },
         { activityId: id },
+        { cuid: id },
       ],
     };
   } else {
-    filter = { activityId: id };
+    filter = {
+      $or: [
+        { activityId: id },
+        { cuid: id },
+      ],
+    };
   }
 
   if (hard) {
