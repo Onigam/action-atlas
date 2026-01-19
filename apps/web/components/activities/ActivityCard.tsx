@@ -25,8 +25,10 @@ export function ActivityCard({
   relevanceScore,
   distance,
 }: ActivityCardProps) {
-  const categoryLabel =
-    ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category;
+  // Get category label with fallback to 'Other' if category is missing
+  const categoryLabel = activity.category
+    ? (ACTIVITY_CATEGORIES[activity.category]?.label ?? activity.category)
+    : 'Other';
 
   // Seed data uses cuid instead of activityId
   const activityId = activity.activityId || activity.cuid || activity._id || '';
