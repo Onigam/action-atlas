@@ -134,12 +134,24 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
           coordinates: coords,
         },
       };
-
-      if (cleanup) {
-        fieldsToUnset.push('geolocations');
-      }
     } else {
+      // geolocations array is empty - set a default location
       errors.push('geolocations array is empty');
+      updates.location = {
+        address: {
+          city: 'Unknown',
+          country: 'Unknown',
+        },
+        coordinates: {
+          type: 'Point',
+          coordinates: [0, 0],
+        },
+      };
+    }
+
+    // Always cleanup geolocations when transforming
+    if (cleanup) {
+      fieldsToUnset.push('geolocations');
     }
   }
 
