@@ -35,6 +35,10 @@ export const LEGACY_FIELDS_TO_REMOVE = [
   'creationDate',                // Duplicate of createdAt
   'updateAt',                    // Typo duplicate of updatedAt
   'location',                    // duplicate of geolocations
+  'startDate',                   // Decision made to cleanup unused fields
+  'createdBy',                   // Decision made to cleanup unused fields
+  'countriesImpacted',           // Decision made to cleanup unused fields
+  'translation'                  // Decision made to cleanup unused fields
 ] as const;
 
 
