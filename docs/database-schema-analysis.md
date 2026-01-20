@@ -343,10 +343,10 @@ pnpm run migrate:embeddings --mode=reset
 | `language` | No | **Add** | - |
 | `type` | No | **Add** | - |
 | `criteria` | No | **Add** | **Add** |
-| `translation` | No | Consider | - |
-| `workLanguages` | No | Consider | - |
-| `complementaryInformation` | No | Consider | - |
-| `countriesImpacted` | No | Consider | - |
+| `translation` | No | **Remove** | - |
+| `workLanguages` | No | **Add** | - |
+| `complementaryInformation` | No | **Add** | - |
+| `countriesImpacted` | No | **Remove** | - |
 | `__v` | No | **Remove** | - |
 | `popularityScoreBias` | No | **Remove** | - |
 | `donationsTiers` | No | **Remove** | - |
@@ -360,15 +360,15 @@ pnpm run migrate:embeddings --mode=reset
 | `_descriptionConvertedAt` | No | **Remove** | - |
 | `_originalDraftJSDescription` | No | **Remove** | - |
 | `_descriptionConversionNote` | No | **Remove** | - |
-| `charged` | No | Consider | - |
-| `minParticipants` | No | Consider | - |
-| `maxParticipants` | No | Consider | - |
-| `createdBy` | No | Consider | - |
-| `typeOfGood` | No | Consider | - |
-| `duration` | No | Consider | - |
-| `startDate` | No | Consider | - |
-| `happening` | No | Consider | - |
-| `estimatedTime` | No | Consider | - |
+| `charged` | No | **Add** | - |
+| `minParticipants` | No | **Add** | - |
+| `maxParticipants` | No | **Add** | - |
+| `createdBy` | No | **Remove** | - |
+| `typeOfGood` | No | **Add** | - |
+| `duration` | No | **Add** | - |
+| `startDate` | No | **Remove** | - |
+| `happening` | No | **Add** | - |
+| `estimatedTime` | No | **Add** | - |
 
 ---
 
