@@ -188,6 +188,17 @@ export interface TransformResult {
   errors: string[];
 }
 
+/**
+ * Transforms a legacy document to match the current Activity schema.
+ *
+ * IMPORTANT: When adding new transformation logic:
+ * 1. Always check if the field has already been migrated before transforming
+ *    (e.g., `if (doc.oldField && !doc.newField)`)
+ * 2. Update the query in migrate-legacy-data.ts to find documents needing this transformation
+ * 3. Add the old field to LEGACY_FIELDS_TO_REMOVE if it should be cleaned up
+ *
+ * This ensures idempotent migrations that won't re-process already migrated documents.
+ */
 export function transformDocument(doc: LegacyDocument, cleanup: boolean): TransformResult {
   const updates: Record<string, unknown> = {};
   const fieldsToUnset: string[] = [];
