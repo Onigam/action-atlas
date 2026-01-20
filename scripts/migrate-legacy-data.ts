@@ -190,9 +190,20 @@ async function migrateData(args: CliArgs): Promise<void> {
       [field]: { $exists: true }
     }));
 
+    /**
+     * IMPORTANT: Query to find documents that need migration.
+     *
+     * When adding new migration logic, ALWAYS update this query to:
+     * 1. Include conditions that identify documents needing the new transformation
+     * 2. Exclude documents that have already been migrated (use patterns like:
+     *    { oldField: { $exists: true }, newField: { $exists: false } })
+     *
+     * This prevents re-processing already migrated documents and ensures
+     * idempotent migrations that can be safely re-run.
+     */
     const query: Record<string, unknown> = {
       $or: [
-        // Documents needing transformation
+        // Documents needing transformation (oldField exists, newField doesn't)
         { cuid: { $exists: true }, activityId: { $exists: false } },
         { name: { $exists: true }, title: { $exists: false } },
         { charity: { $exists: true }, organizationId: { $exists: false } },
