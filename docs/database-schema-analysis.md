@@ -145,13 +145,6 @@ location: {
 ]
 ```
 
-### Recommended Migration
-
-Transform `geolocations[0]` to schema `location`:
-- `address.city` = Parse from `formattedAddress[0].formattedAddress`
-- `address.country` = Parse from `formattedAddress[0].formattedAddress`
-- `coordinates` = Use existing GeoJSON structure
-
 ---
 
 ## 4. Skills Field Issue
@@ -223,13 +216,20 @@ Activity = {
 ### Phase 1: Data Cleanup
 
 **MongoDB Update Script to Remove Fields:**
+
+We need to keep only the activities with the types : 
+- COLLECTION
+- VOLUNTEERING
+- SKILLBASED
+
+We need to keep only the activities with the status : 
+- PUBLISHED
+
 ```javascript
 db.activities.updateMany({}, {
   $unset: {
     "name": "",
-    "location": "",           // string version
-    "creationDate": "",
-    "updateAt": "",
+    "location": "",
     "__v": "",
     "_descriptionConvertedAt": "",
     "_originalDraftJSDescription": "",
@@ -242,7 +242,8 @@ db.activities.updateMany({}, {
     "autoCreateOpportunities": "",
     "autoCreatePost": "",
     "sourceHash": "",
-    "popularityScoreBias": ""
+    "popularityScoreBias": "",
+    "searchableText": ""
   }
 });
 ```
@@ -260,7 +261,7 @@ export const Activity = z.object({
   organizationId: z.string(),
   category: embeddable(z.array(z.string())),
   skills: embeddable(z.array(Skill)),
-  location: LocationSchema,
+  geolocations: LocationSchema, // Keep the formattedAddress format because it's appropriated for calculating the embeddings. FormattedAddress is embaddable
   timeCommitment: TimeCommitment,
   contact: Contact,
   website: z.string().url().optional(),
@@ -283,31 +284,7 @@ export const Activity = z.object({
 });
 ```
 
-### Phase 3: Location Migration
-
-**Transform `geolocations` to `location`:**
-
-```typescript
-function migrateLocation(doc: LegacyActivity): Location {
-  const geo = doc.geolocations?.[0];
-  if (!geo) return null;
-
-  const addressParts = geo.formattedAddress?.[0]?.formattedAddress?.split(', ') || [];
-
-  return {
-    address: {
-      city: addressParts[0] || '',
-      country: addressParts[addressParts.length - 1] || '',
-    },
-    coordinates: {
-      type: 'Point',
-      coordinates: geo.coordinates,
-    },
-  };
-}
-```
-
-### Phase 4: Re-generate Embeddings
+### Phase 3: Re-generate Embeddings
 
 After schema changes, regenerate embeddings with new embeddable fields:
 
