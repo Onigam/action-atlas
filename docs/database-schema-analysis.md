@@ -35,7 +35,6 @@ This analysis compares the current MongoDB data structure against the domain sch
 | `contact` | Contact | - | 50/50 | Present |
 | `website` | string (URL) | - | **0/50** | Missing |
 | `isActive` | boolean | - | 50/50 | Present |
-| `searchableText` | string | - | 50/50 | Present |
 | `embedding` | number[] | - | 50/50 | 1536-dim vectors |
 | `embeddingModel` | string | - | 50/50 | `text-embedding-3-small` |
 | `embeddingUpdatedAt` | Date | - | 50/50 | Present |
@@ -266,7 +265,7 @@ export const Activity = z.object({
   contact: Contact,
   website: z.string().url().optional(),
   isActive: z.boolean(),
-  searchableText: z.string(),
+  searchableText: z.string(), // To remove
   embedding: z.array(z.number()).optional(),
   embeddingModel: z.literal('text-embedding-3-small').optional(),
   embeddingUpdatedAt: z.date().optional(),
@@ -330,7 +329,7 @@ pnpm run migrate:embeddings --mode=reset
 | `contact` | Yes | Yes | - |
 | `website` | Yes | Missing | - |
 | `isActive` | Yes | Yes | - |
-| `searchableText` | Yes | Yes | - |
+| `searchableText` | Yes | **Remove** | - |
 | `embedding` | Yes | Yes | - |
 | `embeddingModel` | Yes | Yes | - |
 | `embeddingUpdatedAt` | Yes | Yes | - |

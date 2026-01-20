@@ -303,7 +303,6 @@ interface ActivityDocument {
   isActive: boolean;
 
   // Vector search fields
-  searchableText: string; // Concatenated text for embedding
   embedding: number[]; // 1536-dimensional vector
   embeddingModel: 'text-embedding-3-small';
   embeddingUpdatedAt: Date;

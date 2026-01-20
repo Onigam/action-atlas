@@ -253,7 +253,7 @@ async function runDataMigration(verbose: boolean): Promise<void> {
       { timeCommitment: { $exists: false } },
       { contact: { $exists: false } },
       { category: { $exists: false } },
-      { searchableText: { $exists: false } },
+      { searchableText: { $exists: true } },
     ],
   };
 

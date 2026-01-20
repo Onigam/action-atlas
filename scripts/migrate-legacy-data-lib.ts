@@ -31,20 +31,12 @@ export const LEGACY_FIELDS_TO_REMOVE = [
   'autoCreatePost',              // Internal flag
   'sourceHash',                  // Import tracking
   'popularityScoreBias',         // Unused metric (always 0)
-  'searchableText',              // Will be regenerated with new embeddable fields
+  'searchableText',              // Only generated when we calculate embeddings, no need to keep
   'creationDate',                // Duplicate of createdAt
   'updateAt',                    // Typo duplicate of updatedAt
+  'location',                    // duplicate of geolocations
 ] as const;
 
-/**
- * Legacy fields that need type-specific queries (not just $exists).
- * These fields are transformed to a new format, so we check for the old type.
- */
-export const LEGACY_FIELDS_BY_TYPE = {
-  // Old 'location' is a string like "france - paris,france"
-  // New 'location' is an object with address and coordinates
-  location: 'string',
-} as const;
 
 // Mapping from cause IDs to labels
 const CAUSES_MAP: Record<string, string> = {
@@ -248,69 +240,6 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     }
   }
 
-  // Transform geolocations → location
-  // Check if location is already in new object format (has address property)
-  const locationIsNewFormat = doc.location && typeof doc.location === 'object' && 'address' in (doc.location as object);
-  const locationIsOldStringFormat = typeof doc.location === 'string';
-
-  if (doc.geolocations && !locationIsNewFormat) {
-    const firstGeo = doc.geolocations[0];
-    if (firstGeo) {
-      const formattedAddr =
-        firstGeo.formattedAddress?.[0]?.formattedAddress || '';
-      const parts = formattedAddr.split(',').map((p) => p.trim()).filter(Boolean);
-
-      // Validate coordinates
-      const coords = firstGeo.coordinates || [0, 0];
-      const [lng, lat] = coords;
-
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-        errors.push('Invalid coordinates: not finite numbers');
-      } else if (lng < -180 || lng > 180 || lat < -90 || lat > 90) {
-        errors.push(`Invalid coordinates: lng=${lng}, lat=${lat} out of range`);
-      }
-
-      updates.location = {
-        address: {
-          city: parts[0] || 'Unknown',
-          country: parts[parts.length - 1] || 'Unknown',
-        },
-        coordinates: {
-          type: 'Point',
-          coordinates: coords,
-        },
-      };
-    } else {
-      // geolocations array is empty - set a default location
-      errors.push('geolocations array is empty');
-      updates.location = {
-        address: {
-          city: 'Unknown',
-          country: 'Unknown',
-        },
-        coordinates: {
-          type: 'Point',
-          coordinates: [0, 0],
-        },
-      };
-    }
-
-    // Always cleanup geolocations when transforming
-    if (cleanup) {
-      fieldsToUnset.push('geolocations');
-    }
-  }
-
-  // Cleanup old string location format (even if we didn't transform from geolocations)
-  if (cleanup && locationIsOldStringFormat && !fieldsToUnset.includes('location')) {
-    // Note: We're setting new location object above, so MongoDB will $set the new value
-    // The old string will be replaced by the new object
-    // But if there's no geolocations to transform from, we should still remove the old string
-    if (!doc.geolocations) {
-      fieldsToUnset.push('location');
-    }
-  }
-
   // Transform skills: prioritize skillsIds if it exists, otherwise use skills string
   // Check if skills is already a valid string array (already migrated)
   const skillsAlreadyMigrated = Array.isArray(doc.skills) &&
@@ -406,22 +335,6 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
   // Set default isActive
   if (doc.isActive === undefined) {
     updates.isActive = true;
-  }
-
-  // Set default searchableText
-  if (!doc.searchableText) {
-    const title = (updates.title as string) || doc.title || doc.name || '';
-    const description = (updates.description as string) || doc.description || '';
-    const searchableText = [title, description]
-      .filter(Boolean)
-      .join('. ')
-      .trim();
-
-    if (searchableText) {
-      updates.searchableText = searchableText;
-    } else {
-      errors.push('Cannot generate searchableText: missing title and description');
-    }
   }
 
   // Set timestamps
