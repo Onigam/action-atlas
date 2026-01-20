@@ -110,10 +110,11 @@ async function migrateData(args: CliArgs): Promise<void> {
         { charity: { $exists: true }, organizationId: { $exists: false } },
         { geolocations: { $exists: true }, location: { $exists: false } },
         { skills: { $type: 'string' } },
+        { skillsIds: { $exists: true } },
         { timeCommitment: { $exists: false } },
         { contact: { $exists: false } },
-        { category: { $exists: false } },
-        { causes: { $exists: true } }, // has causes field to migrate
+        { causesIds: { $exists: true }},
+        { causes: { $exists: true }},
         { searchableText: { $exists: false } },
       ],
     };

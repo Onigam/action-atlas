@@ -5,6 +5,81 @@
 
 import { ObjectId } from 'mongodb';
 
+// Mapping from cause IDs to labels
+const CAUSES_MAP: Record<string, string> = {
+  "CAUSE1": "Animals",
+  "CAUSE2": "Arts & Culture",
+  "CAUSE3": "Responsible consumption",
+  "CAUSE4": "Human rights",
+  "CAUSE5": "Water",
+  "CAUSE6": "Education",
+  "CAUSE7": "Gender Equality",
+  "CAUSE8": "Clean energy",
+  "CAUSE9": "Environment",
+  "CAUSE10": "Children",
+  "CAUSE11": "Hunger",
+  "CAUSE12": "Disability",
+  "CAUSE13": "Innovation",
+  "CAUSE14": "Social integration",
+  "CAUSE15": "Poverty",
+  "CAUSE16": "Refugees",
+  "CAUSE17": "Professional reintegration",
+  "CAUSE18": "Disaster relief",
+  "CAUSE19": "Health",
+  "CAUSE20": "Sustainable cities",
+  "CAUSE21": "Sport"
+};
+
+// Mapping from skill IDs to labels
+const SKILLS_MAP: Record<string, string> = {
+  "SKILL1": "Accounting",
+  "SKILL2": "Branding",
+  "SKILL3": "Business Development",
+  "SKILL4": "Carpentry",
+  "SKILL5": "Coaching",
+  "SKILL6": "Communication",
+  "SKILL7": "Compliance",
+  "SKILL8": "Customer Relationship Management",
+  "SKILL9": "Data Analysis",
+  "SKILL10": "Database Administration",
+  "SKILL11": "Digital Marketing",
+  "SKILL12": "DIY (Do-it-yourself)",
+  "SKILL13": "Education",
+  "SKILL14": "Electricity",
+  "SKILL15": "Engineering",
+  "SKILL16": "Entrepreneurship",
+  "SKILL17": "Environment",
+  "SKILL18": "Evaluation & Reporting",
+  "SKILL19": "Event Organisation",
+  "SKILL20": "Finance",
+  "SKILL21": "Fundraising",
+  "SKILL22": "Gardening",
+  "SKILL23": "Graphic Design",
+  "SKILL24": "Health Services",
+  "SKILL25": "Housing",
+  "SKILL26": "Human Resources",
+  "SKILL27": "Translation",
+  "SKILL28": "Leadership",
+  "SKILL29": "Legal",
+  "SKILL30": "Logistics",
+  "SKILL31": "Management",
+  "SKILL32": "Market study",
+  "SKILL33": "Marketing",
+  "SKILL34": "Masonry",
+  "SKILL35": "Photography",
+  "SKILL36": "Plumbing",
+  "SKILL37": "Project Management",
+  "SKILL38": "Public Relations",
+  "SKILL39": "Public Speaking",
+  "SKILL40": "Research",
+  "SKILL41": "Social Media",
+  "SKILL42": "Strategy Consulting",
+  "SKILL43": "Video Editing",
+  "SKILL44": "Web Design",
+  "SKILL45": "Web Development",
+  "SKILL46": "Writing"
+};
+
 export interface LegacyDocument {
   _id: ObjectId;
   cuid?: string;
@@ -21,10 +96,12 @@ export interface LegacyDocument {
   }>;
   location?: unknown;
   skills?: string | Array<{ name: string; level?: string }>;
+  skillsIds?: string[];
   timeCommitment?: unknown;
   contact?: unknown;
   category?: string | string[];
   causes?: string;
+  causesIds?: string[];
   isActive?: boolean;
   searchableText?: string;
   createdAt?: Date;
@@ -48,6 +125,32 @@ function parseCausesToCategoryArray(causes?: string): string[] {
   }
 
   return Array.from(categories);
+}
+
+/**
+ * Converts causesIds array to category labels array using CAUSES_MAP.
+ */
+function parseCausesIdsToLabels(causesIds?: string[]): string[] {
+  if (!causesIds || !Array.isArray(causesIds)) {
+    return [];
+  }
+
+  return causesIds
+    .map(id => CAUSES_MAP[id])
+    .filter((label): label is string => label !== undefined);
+}
+
+/**
+ * Converts skillsIds array to skill labels array using SKILLS_MAP.
+ */
+function parseSkillsIdsToLabels(skillsIds?: string[]): string[] {
+  if (!skillsIds || !Array.isArray(skillsIds)) {
+    return [];
+  }
+
+  return skillsIds
+    .map(id => SKILLS_MAP[id])
+    .filter((label): label is string => label !== undefined);
 }
 
 export interface TransformResult {
@@ -142,23 +245,31 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     }
   }
 
-  // Transform skills string → array
-  if (typeof doc.skills === 'string') {
+  // Transform skills: prioritize skillsIds if it exists, otherwise use skills string
+  // Check if skills is already a valid string array (already migrated)
+  const skillsAlreadyMigrated = Array.isArray(doc.skills) &&
+    doc.skills.length > 0 &&
+    typeof doc.skills[0] === 'string';
+
+  if (doc.skillsIds && Array.isArray(doc.skillsIds) && doc.skillsIds.length > 0 && !skillsAlreadyMigrated) {
+    // Convert skillsIds to labels array
+    const skillLabels = parseSkillsIdsToLabels(doc.skillsIds);
+    updates.skills = skillLabels;
+  } else if (typeof doc.skills === 'string') {
     const skillsArray = doc.skills
       .split(',')
       .map((s) => s.trim())
-      .filter((s) => s.length > 0)
-      .map((name) => ({ name }));
+      .filter((s) => s.length > 0);
 
-    if (skillsArray.length > 0) {
-      updates.skills = skillsArray;
-    } else {
-      // Set empty array if no valid skills found
-      updates.skills = [];
-    }
+    updates.skills = skillsArray;
   } else if (!doc.skills || (Array.isArray(doc.skills) && doc.skills.length === 0)) {
     // Ensure skills is always an array
     updates.skills = [];
+  }
+
+  // Clean up skillsIds field if it exists
+  if (cleanup && doc.skillsIds) {
+    fieldsToUnset.push('skillsIds');
   }
 
   // Add missing timeCommitment
@@ -202,13 +313,23 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     }
   }
 
-  // Convert causes string and/or category to category array
-  // Only update if we have causes to migrate or category needs to become an array
-  if (doc.causes) {
+  // Convert causesIds or causes string to category array
+  if (doc.causesIds && Array.isArray(doc.causesIds) && doc.causesIds.length > 0) {
+    // Convert causesIds to labels array
+    const categoryArray = parseCausesIdsToLabels(doc.causesIds);
+    if (categoryArray.length > 0) {
+      updates.category = categoryArray;
+    }
+  } else if (doc.causes) {
     const categoryArray = parseCausesToCategoryArray(doc.causes);
     if (categoryArray.length > 0) {
       updates.category = categoryArray;
     }
+  }
+
+  // Clean up old causesIds field
+  if (cleanup && doc.causesIds) {
+    fieldsToUnset.push('causesIds');
   }
 
   // Clean up old causes field
