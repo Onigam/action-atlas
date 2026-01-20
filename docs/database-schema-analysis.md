@@ -181,32 +181,67 @@ Activity = {
 
 ### Search Quality Assessment
 
-| Field | Embeddable | Data Quality | Search Value |
-|-------|:----------:|:------------:|:------------:|
-| `title` | Yes | High | High |
-| `description` | Yes | High (long text) | High |
-| `category` | Yes | Good | Medium |
-| `skills` | Yes | **Empty** | **None** |
-| `shortDescription` | No | High (concise) | **High** |
-| `criteria` | No | Good (26/50) | **High** |
-| `geolocations.formattedAddress` | No | Good | Medium |
+Based on the fields retained in the database after cleanup:
+
+| Field | Embeddable | Data Quality | Search Value | Notes |
+|-------|:----------:|:------------:|:------------:|-------|
+| `title` | **Yes** | High | **High** | Core semantic content |
+| `description` | **Yes** | High (long text) | **High** | Rich detail for matching |
+| `shortDescription` | **Yes** | High (concise) | **High** | Better for quick semantic matching |
+| `category` | **Yes** | Good | **High** | Multi-value, good for filtering |
+| `criteria` | **Yes** | Good (26/50) | **High** | Skills/requirements extraction |
+| `geolocations.formattedAddress` | **Yes** | Good | **Medium** | Location-based semantic search |
+| `skills` | Yes | **Empty** | **None** | Remove - no data exists |
+
+### Vector Search Filter Fields
+
+These fields can be used as **pre-filters** in MongoDB Atlas Vector Search to narrow results before semantic ranking:
+
+| Filter Field | Type | Use Case | Cardinality |
+|--------------|------|----------|-------------|
+| `type` | enum | Filter by activity type (VOLUNTEERING, COLLECTION, SKILLBASED) | Low (3 values) |
+| `remote` | boolean | Remote vs on-site activities | Binary |
+| `language` | string | Content language filtering | Low (~10 values) |
+| `category` | string[] | Cause/domain filtering | Medium (~20 values) |
+| `isActive` | boolean | Active activities only | Binary |
+| `organizationId` | string | Organization-specific search | High |
+| `geolocations.coordinates` | GeoJSON | Geo-proximity filtering | Continuous |
+| `timeCommitment.isFlexible` | boolean | Flexible schedule filter | Binary |
+| `timeCommitment.isOneTime` | boolean | One-time vs ongoing | Binary |
+| `timeCommitment.isRecurring` | boolean | Recurring commitments | Binary |
 
 ### Recommended Embeddable Configuration
 
 ```typescript
 Activity = {
+  // Core semantic fields - HIGH VALUE
   title: embeddable(z.string()),
   description: embeddable(z.string()),
-  shortDescription: embeddable(z.string().optional()),  // ADD
+  shortDescription: embeddable(z.string().optional()),
+
+  // Categorical semantic fields
   category: embeddable(z.array(z.string())),
-  skills: embeddable(z.array(Skill)),                   // Keep if populated
-  criteria: embeddable(z.string().optional()),          // ADD
+  criteria: embeddable(z.string().optional()),
+
+  // Location for "near Paris" type queries
+  geolocations: z.array(z.object({
+    formattedAddress: embeddable(z.array(z.object({
+      formattedAddress: z.string(),
+      language: z.string(),
+    }))),
+    // ... coordinates, etc.
+  })),
+
+  // REMOVED - no data exists
+  // skills: embeddable(z.array(Skill)),
 }
 ```
 
 **Rationale:**
-- `shortDescription`: Concise summary, better for semantic matching
-- `criteria`: Contains requirements and needed skills (compensates for empty `skills`)
+- **`shortDescription`**: Concise summary, excellent for semantic matching with shorter queries
+- **`criteria`**: Contains requirements and needed skills (compensates for empty `skills` field)
+- **`geolocations.formattedAddress`**: Enables "volunteering in Paris" semantic queries
+- **Remove `skills`**: Field is empty across all documents - wasted embedding space
 
 ---
 
