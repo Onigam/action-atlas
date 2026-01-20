@@ -33,7 +33,7 @@ import {
   connectToDatabase,
   disconnectFromDatabase,
 } from '@action-atlas/database';
-import { transformDocument, LEGACY_FIELDS_TO_REMOVE, type LegacyDocument, type TransformResult } from './migrate-legacy-data-lib';
+import { transformDocument, LEGACY_FIELDS_TO_REMOVE, LEGACY_FIELDS_BY_TYPE, type LegacyDocument, type TransformResult } from './migrate-legacy-data-lib';
 
 // Load environment variables
 config({ path: path.join(process.cwd(), '.env.local') });
@@ -186,9 +186,16 @@ async function migrateData(args: CliArgs): Promise<void> {
 
     // Step 2: Find legacy documents that need migration
     // Build query to find documents that need transformation OR have legacy fields to remove
+
+    // Regular legacy fields - just check existence
     const legacyFieldsExistConditions = LEGACY_FIELDS_TO_REMOVE.map(field => ({
       [field]: { $exists: true }
     }));
+
+    // Type-specific legacy fields - check for old type (e.g., location as string)
+    const legacyFieldsByTypeConditions = Object.entries(LEGACY_FIELDS_BY_TYPE).map(
+      ([field, type]) => ({ [field]: { $type: type } })
+    );
 
     /**
      * IMPORTANT: Query to find documents that need migration.
@@ -197,6 +204,8 @@ async function migrateData(args: CliArgs): Promise<void> {
      * 1. Include conditions that identify documents needing the new transformation
      * 2. Exclude documents that have already been migrated (use patterns like:
      *    { oldField: { $exists: true }, newField: { $exists: false } })
+     * 3. For fields that change TYPE (not just renamed), use $type instead of $exists
+     *    (e.g., location: string → object, use { location: { $type: 'string' } })
      *
      * This prevents re-processing already migrated documents and ensures
      * idempotent migrations that can be safely re-run.
@@ -216,6 +225,8 @@ async function migrateData(args: CliArgs): Promise<void> {
         { causes: { $exists: true } },
         // Documents with legacy fields to remove (only when cleanup is enabled)
         ...(args.cleanup ? legacyFieldsExistConditions : []),
+        // Documents with type-specific legacy fields (e.g., location as string)
+        ...(args.cleanup ? legacyFieldsByTypeConditions : []),
       ],
     };
 

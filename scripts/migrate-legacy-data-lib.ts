@@ -12,10 +12,12 @@ import { ObjectId } from 'mongodb';
  * - Migration metadata no longer needed
  * - Always empty arrays or unused
  * - Internal flags not part of the schema
+ *
+ * NOTE: 'location' is NOT included here because it's transformed from string
+ * to object format (not just deleted). It's handled separately in transformDocument.
  */
 export const LEGACY_FIELDS_TO_REMOVE = [
   'name',                        // Duplicate of title
-  'location',                    // Legacy string format (superseded by geolocations → location object)
   '__v',                         // Mongoose version key
   '_descriptionConvertedAt',     // Migration metadata
   '_originalDraftJSDescription', // Migration backup data
@@ -33,6 +35,16 @@ export const LEGACY_FIELDS_TO_REMOVE = [
   'creationDate',                // Duplicate of createdAt
   'updateAt',                    // Typo duplicate of updatedAt
 ] as const;
+
+/**
+ * Legacy fields that need type-specific queries (not just $exists).
+ * These fields are transformed to a new format, so we check for the old type.
+ */
+export const LEGACY_FIELDS_BY_TYPE = {
+  // Old 'location' is a string like "france - paris,france"
+  // New 'location' is an object with address and coordinates
+  location: 'string',
+} as const;
 
 // Mapping from cause IDs to labels
 const CAUSES_MAP: Record<string, string> = {
@@ -237,7 +249,11 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
   }
 
   // Transform geolocations → location
-  if (doc.geolocations && !doc.location) {
+  // Check if location is already in new object format (has address property)
+  const locationIsNewFormat = doc.location && typeof doc.location === 'object' && 'address' in (doc.location as object);
+  const locationIsOldStringFormat = typeof doc.location === 'string';
+
+  if (doc.geolocations && !locationIsNewFormat) {
     const firstGeo = doc.geolocations[0];
     if (firstGeo) {
       const formattedAddr =
@@ -282,6 +298,16 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     // Always cleanup geolocations when transforming
     if (cleanup) {
       fieldsToUnset.push('geolocations');
+    }
+  }
+
+  // Cleanup old string location format (even if we didn't transform from geolocations)
+  if (cleanup && locationIsOldStringFormat && !fieldsToUnset.includes('location')) {
+    // Note: We're setting new location object above, so MongoDB will $set the new value
+    // The old string will be replaced by the new object
+    // But if there's no geolocations to transform from, we should still remove the old string
+    if (!doc.geolocations) {
+      fieldsToUnset.push('location');
     }
   }
 
