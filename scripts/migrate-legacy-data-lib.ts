@@ -5,6 +5,35 @@
 
 import { ObjectId } from 'mongodb';
 
+/**
+ * Legacy fields to remove during cleanup.
+ * These are fields that are either:
+ * - Duplicates of other fields (name → title, creationDate → createdAt)
+ * - Migration metadata no longer needed
+ * - Always empty arrays or unused
+ * - Internal flags not part of the schema
+ */
+export const LEGACY_FIELDS_TO_REMOVE = [
+  'name',                        // Duplicate of title
+  'location',                    // Legacy string format (superseded by geolocations → location object)
+  '__v',                         // Mongoose version key
+  '_descriptionConvertedAt',     // Migration metadata
+  '_originalDraftJSDescription', // Migration backup data
+  '_descriptionConversionNote',  // Migration error notes
+  'activityWorkLanguages',       // Contains empty strings
+  'owningOrganizations',         // Always empty
+  'timeSlotsIds',                // Always empty
+  'sustainableDevelopmentGoals', // Always empty
+  'donationsTiers',              // Always empty
+  'autoCreateOpportunities',     // Internal flag
+  'autoCreatePost',              // Internal flag
+  'sourceHash',                  // Import tracking
+  'popularityScoreBias',         // Unused metric (always 0)
+  'searchableText',              // Will be regenerated with new embeddable fields
+  'creationDate',                // Duplicate of createdAt
+  'updateAt',                    // Typo duplicate of updatedAt
+] as const;
+
 // Mapping from cause IDs to labels
 const CAUSES_MAP: Record<string, string> = {
   "CAUSE1": "Animals",
@@ -364,6 +393,16 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
   }
   if (!doc.updatedAt) {
     updates.updatedAt = new Date();
+  }
+
+  // Add all legacy fields to unset list when cleanup is enabled
+  // Only add fields that actually exist in the document to avoid unnecessary operations
+  if (cleanup) {
+    for (const field of LEGACY_FIELDS_TO_REMOVE) {
+      if (doc[field] !== undefined && !fieldsToUnset.includes(field)) {
+        fieldsToUnset.push(field);
+      }
+    }
   }
 
   return { updates, fieldsToUnset, errors };
