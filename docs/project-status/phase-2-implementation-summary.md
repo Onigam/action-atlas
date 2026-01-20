@@ -32,7 +32,7 @@ Successfully implemented complete database and AI packages with MongoDB client, 
 - `listIndexes()` - List all indexes for debugging
 - Support for:
   - Compound index on category, isActive, location
-  - Text index on title, description, searchableText
+  - Text index on title, description
   - Organization indexes for status and text search
 
 #### 4. Activity Operations (`src/operations/activities.ts`)

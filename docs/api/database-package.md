@@ -191,8 +191,7 @@ const activity = await createActivity({
     role: 'Volunteer Coordinator',
     email: 'jane@example.org'
   },
-  isActive: true,
-  searchableText: 'Teach kids coding programming education...'
+  isActive: true
 });
 ```
 
@@ -402,7 +401,7 @@ The following indexes are created:
 
 **Activities:**
 - Compound: `{ category: 1, isActive: 1, 'location.coordinates': '2dsphere' }`
-- Text: `{ title: 'text', description: 'text', searchableText: 'text' }`
+- Text: `{ title: 'text', description: 'text' }`
 - Organization: `{ organizationId: 1, isActive: 1 }`
 - Date: `{ createdAt: -1 }`
 

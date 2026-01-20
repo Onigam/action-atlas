@@ -304,7 +304,6 @@ pnpm data:transform
 # - Parses Draft.js descriptions
 # - Extracts primary geolocations
 # - Infers categories from content
-# - Creates searchableText field
 ```
 
 **Generate Embeddings**:
@@ -486,8 +485,6 @@ function transformActivity(
       role: 'Coordinator',
       email: 'contact@unknown.org',
     },
-
-    searchableText: `${activity.name} ${description} ${charity?.name || ''}`.trim(),
     embedding: [],  // Generated in next step
 
     isActive: activity.status === 'APPROVED',

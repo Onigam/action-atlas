@@ -18,7 +18,7 @@ export const activityIndexes = [
   },
   // Text index for fallback keyword search
   {
-    key: { title: 'text', description: 'text', searchableText: 'text' },
+    key: { title: 'text', description: 'text' },
     name: 'text_search',
   },
   // Index for organization queries

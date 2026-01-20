@@ -55,7 +55,6 @@ export const Activity = z.object({
   contact: Contact,
   website: z.string().url().optional(),
   isActive: z.boolean(),
-  searchableText: z.string(),
   embedding: z.array(z.number()).optional(),
   embeddingModel: z.literal('text-embedding-3-small').optional(),
   embeddingUpdatedAt: z.date().optional(),

@@ -246,7 +246,6 @@ This document provides a detailed, step-by-step implementation plan for Action A
       email: string;
       phone?: string;
     };
-    searchableText: string;
     embedding?: number[];
     embeddingModel?: string;
     embeddingUpdatedAt?: Date;
@@ -309,8 +308,7 @@ This document provides a detailed, step-by-step implementation plan for Action A
     // Text search index (fallback)
     await db.collection('activities').createIndex({
       title: 'text',
-      description: 'text',
-      searchableText: 'text'
+      description: 'text'
     });
 
     console.log('Indexes created successfully');

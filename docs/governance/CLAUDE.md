@@ -150,7 +150,6 @@ The semantic search follows this flow:
   },
   embedding: number[],               // 1536-dimensional vector
   embeddingModel: 'text-embedding-3-small',
-  searchableText: string,            // Concatenated text for embedding
   isActive: boolean,
   createdAt: Date,
   updatedAt: Date
@@ -161,7 +160,7 @@ The semantic search follows this flow:
 - Vector search index on `embedding` field (1536 dimensions, cosine similarity)
 - 2dsphere index on `location.coordinates` for geospatial queries
 - Compound index on `category`, `isActive`, `location.coordinates`
-- Text index on `title`, `description`, `searchableText` (fallback)
+- Text index on `title`, `description` (fallback)
 
 ## Important Development Patterns
 
@@ -192,7 +191,6 @@ When working with embeddings:
 
 1. **Always cache embeddings**: 30-day TTL in Redis
 2. **Normalize text before embedding**: Lowercase, trim, remove extra spaces
-3. **Use `searchableText` field**: Concatenate title + description + skills + location
 4. **Batch generation**: Use `embedMany()` for multiple activities
 5. **Update embedding on content change**: Set `embeddingUpdatedAt` timestamp
 

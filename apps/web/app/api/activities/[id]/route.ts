@@ -130,7 +130,6 @@ export async function PATCH(
 
       // Build update data without undefined fields for exactOptionalPropertyTypes
       const updateDataWithEmbedding: Record<string, unknown> = {
-        searchableText,
         embedding,
         embeddingModel: 'text-embedding-3-small',
         embeddingUpdatedAt: new Date(),

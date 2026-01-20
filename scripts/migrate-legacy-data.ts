@@ -33,7 +33,7 @@ import {
   connectToDatabase,
   disconnectFromDatabase,
 } from '@action-atlas/database';
-import { transformDocument, LEGACY_FIELDS_TO_REMOVE, LEGACY_FIELDS_BY_TYPE, type LegacyDocument, type TransformResult } from './migrate-legacy-data-lib';
+import { transformDocument, LEGACY_FIELDS_TO_REMOVE, type LegacyDocument, type TransformResult } from './migrate-legacy-data-lib';
 
 // Load environment variables
 config({ path: path.join(process.cwd(), '.env.local') });
@@ -192,11 +192,6 @@ async function migrateData(args: CliArgs): Promise<void> {
       [field]: { $exists: true }
     }));
 
-    // Type-specific legacy fields - check for old type (e.g., location as string)
-    const legacyFieldsByTypeConditions = Object.entries(LEGACY_FIELDS_BY_TYPE).map(
-      ([field, type]) => ({ [field]: { $type: type } })
-    );
-
     /**
      * IMPORTANT: Query to find documents that need migration.
      *
@@ -216,7 +211,7 @@ async function migrateData(args: CliArgs): Promise<void> {
         { cuid: { $exists: true }, activityId: { $exists: false } },
         { name: { $exists: true }, title: { $exists: false } },
         { charity: { $exists: true }, organizationId: { $exists: false } },
-        { geolocations: { $exists: true }, location: { $exists: false } },
+        { location: { $exists: true } },
         { skills: { $type: 'string' } },
         { skillsIds: { $exists: true } },
         { timeCommitment: { $exists: false } },
@@ -225,8 +220,6 @@ async function migrateData(args: CliArgs): Promise<void> {
         { causes: { $exists: true } },
         // Documents with legacy fields to remove (only when cleanup is enabled)
         ...(args.cleanup ? legacyFieldsExistConditions : []),
-        // Documents with type-specific legacy fields (e.g., location as string)
-        ...(args.cleanup ? legacyFieldsByTypeConditions : []),
       ],
     };
 
