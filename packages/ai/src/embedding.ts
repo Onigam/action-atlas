@@ -88,22 +88,20 @@ interface GeolocationInput {
 }
 
 /**
- * Prepares an activity for embedding using schema-defined embeddable fields.
- * Uses the Activity schema to automatically detect which fields should be embedded.
- *
- * Embeddable fields extracted:
- * - title: Activity title
- * - description: Full description text
- * - category: Array of cause categories (joined with comma)
- * - skills: Array of skill strings (joined with comma)
- * - geolocations: Formatted addresses (extracted from nested structure)
- *
- * Also includes organization info if provided (for contextual relevance).
- *
- * @param activity - The activity object to prepare for embedding
- * @returns A concatenated string of all embeddable field values
+ * Time commitment structure for embedding preparation
  */
-export function prepareActivityForEmbedding(activity: {
+interface TimeCommitmentInput {
+  hoursPerWeek?: number;
+  isFlexible: boolean;
+  isOneTime: boolean;
+  isRecurring: boolean;
+  schedule?: string;
+}
+
+/**
+ * Activity input for embedding preparation
+ */
+interface ActivityEmbeddingInput {
   title: string;
   description: string;
   organization?: { name?: string; mission?: string };
@@ -111,31 +109,139 @@ export function prepareActivityForEmbedding(activity: {
   category?: string[];
   geolocations?: GeolocationInput[];
   language?: string;
-}): string {
-  // Extract embeddable fields from the Activity schema
-  const embeddableValues = extractEmbeddableValues(
-    Activity,
-    activity as Record<string, unknown>
+  remote?: boolean;
+  minParticipants?: number | null;
+  maxParticipants?: number | null;
+  timeCommitment?: TimeCommitmentInput;
+  complementaryInformation?: string;
+}
+
+/**
+ * Builds a human-readable description of time commitment for embedding.
+ */
+function buildTimeCommitmentText(tc: TimeCommitmentInput): string | null {
+  const parts: string[] = [];
+
+  if (tc.isOneTime) parts.push('one-time event');
+  if (tc.isRecurring) parts.push('recurring commitment');
+  if (tc.isFlexible) parts.push('flexible schedule');
+  if (tc.hoursPerWeek) parts.push(`${tc.hoursPerWeek} hours per week`);
+  if (tc.schedule) parts.push(tc.schedule);
+
+  return parts.length > 0 ? `Time commitment: ${parts.join(', ')}` : null;
+}
+
+/**
+ * Builds a human-readable description of participant requirements for embedding.
+ */
+function buildParticipantsText(
+  min?: number | null,
+  max?: number | null
+): string | null {
+  if (!min && !max) return null;
+
+  if (min && max) {
+    return `Group size: ${min} to ${max} participants`;
+  } else if (min) {
+    return `Minimum ${min} participants required`;
+  } else if (max) {
+    return `Maximum ${max} participants`;
+  }
+  return null;
+}
+
+/**
+ * Prepares an activity for embedding by constructing a semantically rich text
+ * that captures all relevant information for vector search.
+ *
+ * Fields included in embedding text:
+ * - title: Activity name/title
+ * - description: Full activity description
+ * - category: Array of cause categories (with "Categories:" prefix)
+ * - skills: Array of required skills (with "Skills needed:" prefix)
+ * - remote: Boolean converted to descriptive text about remote availability
+ * - minParticipants/maxParticipants: Group size requirements
+ * - timeCommitment: Schedule flexibility and commitment type
+ * - complementaryInformation: Additional details
+ * - geolocations: All formatted addresses (with "Locations:" prefix)
+ * - organization: Name and mission for contextual relevance
+ *
+ * @param activity - The activity object to prepare for embedding
+ * @returns A concatenated string optimized for semantic search
+ */
+export function prepareActivityForEmbedding(
+  activity: ActivityEmbeddingInput
+): string {
+  const parts: string[] = [];
+
+  // 1. Title (primary identifier)
+  if (activity.title) {
+    parts.push(activity.title);
+  }
+
+  // 2. Description (main content)
+  if (activity.description) {
+    parts.push(activity.description);
+  }
+
+  // 3. Categories (cause areas)
+  if (activity.category?.length) {
+    parts.push(`Categories: ${activity.category.join(', ')}`);
+  }
+
+  // 4. Skills (requirements)
+  if (activity.skills?.length) {
+    parts.push(`Skills needed: ${activity.skills.join(', ')}`);
+  }
+
+  // 5. Remote availability - convert boolean to descriptive text
+  if (activity.remote === true) {
+    parts.push('This activity can be done remotely');
+  } else if (activity.remote === false) {
+    parts.push('This activity requires in-person participation');
+  }
+
+  // 6. Participants context
+  const participantsText = buildParticipantsText(
+    activity.minParticipants,
+    activity.maxParticipants
   );
-
-  // Add organization context (not part of Activity schema but useful for search)
-  if (activity.organization?.name) {
-    embeddableValues.push(activity.organization.name);
-  }
-  if (activity.organization?.mission) {
-    embeddableValues.push(activity.organization.mission);
+  if (participantsText) {
+    parts.push(participantsText);
   }
 
-  // Add geolocations context (formatted addresses for location-based semantic search)
-  // Use activity's language as preferred, fallback to 'en'
+  // 7. Time commitment (textual description)
+  if (activity.timeCommitment) {
+    const timeText = buildTimeCommitmentText(activity.timeCommitment);
+    if (timeText) {
+      parts.push(timeText);
+    }
+  }
+
+  // 8. Complementary information
+  if (activity.complementaryInformation) {
+    parts.push(activity.complementaryInformation);
+  }
+
+  // 9. Locations (all formatted addresses)
   const preferredLanguage = activity.language || 'en';
   const locationValues = extractGeolocationsEmbeddableValues(
     activity.geolocations,
     preferredLanguage
   );
-  embeddableValues.push(...locationValues);
+  if (locationValues.length > 0) {
+    parts.push(`Locations: ${locationValues.join('; ')}`);
+  }
 
-  return embeddableValues.filter(Boolean).join('. ');
+  // 10. Organization context
+  if (activity.organization?.name) {
+    parts.push(`Organization: ${activity.organization.name}`);
+  }
+  if (activity.organization?.mission) {
+    parts.push(activity.organization.mission);
+  }
+
+  return parts.filter(Boolean).join('. ');
 }
 
 /**
