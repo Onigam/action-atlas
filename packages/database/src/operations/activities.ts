@@ -520,6 +520,7 @@ export async function findActivitiesWithoutEmbeddingsWithOrganization(
         from: 'charities', // The organizations collection is named 'charities'
         let: {
           orgId: '$organizationId',
+          orgIdStr: { $toString: '$organizationId' },
           charityName: '$charity',
         },
         pipeline: [
@@ -527,9 +528,13 @@ export async function findActivitiesWithoutEmbeddingsWithOrganization(
             $match: {
               $expr: {
                 $or: [
+                  // Match charity._id with activity.organizationId (both as strings)
+                  { $eq: [{ $toString: '$_id' }, '$$orgIdStr'] },
+                  // Match charity._id with activity.organizationId (ObjectId comparison)
+                  { $eq: ['$_id', '$$orgId'] },
+                  // Fallback: match by organizationId field
                   { $eq: ['$organizationId', '$$orgId'] },
-                  { $eq: ['$cuid', '$$orgId'] },
-                  { $eq: [{ $toString: '$_id' }, '$$orgId'] },
+                  // Fallback: match by charity name (legacy)
                   { $eq: ['$name', '$$charityName'] },
                 ],
               },
@@ -592,6 +597,7 @@ export async function findActivitiesWithOrganization(
         from: 'charities',
         let: {
           orgId: '$organizationId',
+          orgIdStr: { $toString: '$organizationId' },
           charityName: '$charity',
         },
         pipeline: [
@@ -599,9 +605,15 @@ export async function findActivitiesWithOrganization(
             $match: {
               $expr: {
                 $or: [
+                  // Match charity._id with activity.organizationId (both as strings)
+                  { $eq: [{ $toString: '$_id' }, '$$orgIdStr'] },
+                  // Match charity._id with activity.organizationId (ObjectId comparison)
+                  { $eq: ['$_id', '$$orgId'] },
+                  // Fallback: match by organizationId field
                   { $eq: ['$organizationId', '$$orgId'] },
+                  // Fallback: match by cuid field
                   { $eq: ['$cuid', '$$orgId'] },
-                  { $eq: [{ $toString: '$_id' }, '$$orgId'] },
+                  // Fallback: match by charity name (legacy)
                   { $eq: ['$name', '$$charityName'] },
                 ],
               },
