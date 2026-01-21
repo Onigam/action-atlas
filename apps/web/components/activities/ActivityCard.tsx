@@ -39,9 +39,6 @@ export function ActivityCard({
   // Seed data uses cuid instead of activityId
   const activityId = activity.activityId || activity.cuid || activity._id || '';
 
-  // Seed data uses shortDescription field
-  const description = activity.shortDescription || activity.description;
-
   // Seed data may have coverImageUrl
   const coverImageUrl = activity.coverImageUrl || undefined;
 
@@ -73,7 +70,7 @@ export function ActivityCard({
             )}
           </div>
           <CardDescription className="line-clamp-2">
-            {truncate(description || '', 120)}
+            {truncate(activity.description || '', 120)}
           </CardDescription>
         </CardHeader>
 
