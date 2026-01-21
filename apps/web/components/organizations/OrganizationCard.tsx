@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ROUTES } from '@/lib/constants';
-import { formatLocationShort, truncate } from '@/lib/utils';
+import { formatLegacyLocationShort, truncate } from '@/lib/utils';
 
 export interface OrganizationCardProps {
   organization: Organization;
@@ -64,7 +64,7 @@ export function OrganizationCard({
           {/* Location */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 shrink-0" />
-            <span>{formatLocationShort(organization.location)}</span>
+            <span>{formatLegacyLocationShort(organization.location)}</span>
           </div>
 
           {/* Email */}

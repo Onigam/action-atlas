@@ -116,6 +116,12 @@ export function getEmbeddableFields(
  * Extracts values from an object for all embeddable fields defined in its schema.
  * Returns an array of non-empty string values that should be embedded.
  *
+ * Handles:
+ * - Simple strings
+ * - Arrays of strings (joined with comma)
+ * - Arrays of objects with 'name' property (extracts name values)
+ * - Nested objects (extracts string values)
+ *
  * @param schema - A Zod object schema with embeddable fields marked
  * @param data - The object to extract values from
  * @returns Array of string values from embeddable fields
@@ -133,7 +139,7 @@ export function extractEmbeddableValues(
       if (typeof value === 'string' && value.trim()) {
         values.push(value.trim());
       } else if (Array.isArray(value)) {
-        // Handle arrays (like skills)
+        // Handle arrays (strings or objects with 'name' property)
         const arrayValues = value
           .map((item) => {
             if (typeof item === 'string') {
@@ -160,6 +166,53 @@ export function extractEmbeddableValues(
   }
 
   return values;
+}
+
+/**
+ * Extracts embeddable values from geolocations array.
+ * Specifically handles the nested formattedAddress structure used in activities.
+ *
+ * Structure expected:
+ * geolocations: [{
+ *   formattedAddress: [{ formattedAddress: "Paris, France", language: "en" }]
+ * }]
+ *
+ * @param geolocations - Array of geolocation objects
+ * @param preferredLanguage - Optional language preference (defaults to "en")
+ * @returns Array of formatted address strings
+ */
+export function extractGeolocationsEmbeddableValues(
+  geolocations: Array<{
+    formattedAddress?: Array<{
+      formattedAddress: string;
+      language: string;
+    }>;
+  }> | undefined,
+  preferredLanguage: string = 'en'
+): string[] {
+  if (!geolocations || !Array.isArray(geolocations)) {
+    return [];
+  }
+
+  const values: string[] = [];
+
+  for (const geo of geolocations) {
+    if (geo.formattedAddress && Array.isArray(geo.formattedAddress)) {
+      // Try to find the preferred language first
+      const preferred = geo.formattedAddress.find(
+        (addr) => addr.language === preferredLanguage
+      );
+      if (preferred?.formattedAddress) {
+        values.push(preferred.formattedAddress);
+      } else if (geo.formattedAddress[0]?.formattedAddress) {
+        // Fall back to first available
+        values.push(geo.formattedAddress[0].formattedAddress);
+      }
+    }
+  }
+
+  // Remove duplicates
+  return [...new Set(values)];
 }
 
 /**

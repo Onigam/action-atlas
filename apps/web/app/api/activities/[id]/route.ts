@@ -1,4 +1,4 @@
-import { generateEmbedding } from '@action-atlas/ai';
+import { generateEmbedding, prepareActivityForEmbedding } from '@action-atlas/ai';
 import {
   connectToDatabase,
   deleteActivity,
@@ -73,12 +73,11 @@ export async function GET(
  * {
  *   title?: string,
  *   description?: string,
- *   category?: ActivityCategory[],
- *   skills?: Array<{ name: string, level?: string }>,
- *   location?: Location,
+ *   category?: string[],
+ *   skills?: string[],
+ *   geolocations?: Geolocation[],
  *   timeCommitment?: TimeCommitment,
  *   contact?: Contact,
- *   website?: string,
  *   isActive?: boolean
  * }
  *
@@ -109,21 +108,22 @@ export async function PATCH(
     }
 
     // Determine if content has changed (needs embedding update)
-    const contentFields = ['title', 'description', 'skills', 'category', 'location'];
+    const contentFields = ['title', 'description', 'skills', 'category', 'geolocations'];
     const contentChanged = contentFields.some((field) => field in updateData);
 
     if (contentChanged) {
-      const categoryArray = updateData.category ?? existingActivity.category;
-      const searchableText = [
-        updateData.title ?? existingActivity.title,
-        updateData.description ?? existingActivity.description,
-        (updateData.skills ?? existingActivity.skills).map((s) => s.name).join(', '),
-        Array.isArray(categoryArray) ? categoryArray.join(', ') : categoryArray,
-        (updateData.location ?? existingActivity.location).address.city,
-        (updateData.location ?? existingActivity.location).address.country,
-      ]
-        .filter(Boolean)
-        .join('. ');
+      // Merge updated fields with existing activity for embedding preparation
+      const activityForEmbedding = {
+        title: updateData.title ?? existingActivity.title,
+        description: updateData.description ?? existingActivity.description,
+        skills: updateData.skills ?? existingActivity.skills,
+        category: updateData.category ?? existingActivity.category,
+        geolocations: updateData.geolocations ?? existingActivity.geolocations,
+        language: existingActivity.language,
+      };
+
+      // Use the standard embedding preparation function
+      const searchableText = prepareActivityForEmbedding(activityForEmbedding);
 
       // Generate new embedding
       const { embedding } = await generateEmbedding(searchableText);

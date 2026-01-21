@@ -428,13 +428,15 @@ export async function findActivitiesByIdsWithGeoNear(
       const withDistance = activitiesData
         .filter((activity) => {
           // Filter out activities without valid coordinates
-          const actLng = activity.location?.coordinates?.coordinates?.[0];
-          const actLat = activity.location?.coordinates?.coordinates?.[1];
+          // Use first geolocation's coordinates
+          const actLng = activity.geolocations?.[0]?.coordinates?.[0];
+          const actLat = activity.geolocations?.[0]?.coordinates?.[1];
           return isValidCoordinates(actLat, actLng);
         })
         .map((activity) => {
-          const actLng = activity.location!.coordinates!.coordinates![0];
-          const actLat = activity.location!.coordinates!.coordinates![1];
+          // Use first geolocation's coordinates
+          const actLng = activity.geolocations![0]!.coordinates[0];
+          const actLat = activity.geolocations![0]!.coordinates[1];
 
           // Use proper Haversine distance calculation
           const distance = calculateHaversineDistance(queryLat, queryLng, actLat, actLng);

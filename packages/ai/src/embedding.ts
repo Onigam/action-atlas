@@ -7,6 +7,7 @@ import {
   Organization,
   getEmbeddableFields,
   extractEmbeddableValues,
+  extractGeolocationsEmbeddableValues,
 } from '@action-atlas/types';
 
 const EMBEDDING_MODEL = 'text-embedding-3-small';
@@ -77,10 +78,27 @@ export function normalizeText(text: string): string {
 }
 
 /**
+ * Geolocation structure from MongoDB
+ */
+interface GeolocationInput {
+  formattedAddress?: Array<{
+    formattedAddress: string;
+    language: string;
+  }>;
+}
+
+/**
  * Prepares an activity for embedding using schema-defined embeddable fields.
  * Uses the Activity schema to automatically detect which fields should be embedded.
  *
- * Also includes organization info and location if provided (for contextual relevance).
+ * Embeddable fields extracted:
+ * - title: Activity title
+ * - description: Full description text
+ * - category: Array of cause categories (joined with comma)
+ * - skills: Array of skill strings (joined with comma)
+ * - geolocations: Formatted addresses (extracted from nested structure)
+ *
+ * Also includes organization info if provided (for contextual relevance).
  *
  * @param activity - The activity object to prepare for embedding
  * @returns A concatenated string of all embeddable field values
@@ -89,9 +107,10 @@ export function prepareActivityForEmbedding(activity: {
   title: string;
   description: string;
   organization?: { name?: string; mission?: string };
-  skills?: Array<{ name: string }> | string;
-  category?: string | string[];
-  location?: { address?: { city?: string; country?: string } };
+  skills?: string[];
+  category?: string[];
+  geolocations?: GeolocationInput[];
+  language?: string;
 }): string {
   // Extract embeddable fields from the Activity schema
   const embeddableValues = extractEmbeddableValues(
@@ -107,13 +126,14 @@ export function prepareActivityForEmbedding(activity: {
     embeddableValues.push(activity.organization.mission);
   }
 
-  // Add location context (city and country are useful for search)
-  if (activity.location?.address?.city) {
-    embeddableValues.push(activity.location.address.city);
-  }
-  if (activity.location?.address?.country) {
-    embeddableValues.push(activity.location.address.country);
-  }
+  // Add geolocations context (formatted addresses for location-based semantic search)
+  // Use activity's language as preferred, fallback to 'en'
+  const preferredLanguage = activity.language || 'en';
+  const locationValues = extractGeolocationsEmbeddableValues(
+    activity.geolocations,
+    preferredLanguage
+  );
+  embeddableValues.push(...locationValues);
 
   return embeddableValues.filter(Boolean).join('. ');
 }
@@ -129,7 +149,7 @@ export function prepareOrganizationForEmbedding(organization: {
   name: string;
   description: string;
   mission?: string;
-  location?: { address?: { city?: string; country?: string } };
+  geolocations?: GeolocationInput[];
 }): string {
   // Extract embeddable fields from the Organization schema
   const embeddableValues = extractEmbeddableValues(
@@ -137,13 +157,12 @@ export function prepareOrganizationForEmbedding(organization: {
     organization as Record<string, unknown>
   );
 
-  // Add location context (city and country are useful for search)
-  if (organization.location?.address?.city) {
-    embeddableValues.push(organization.location.address.city);
-  }
-  if (organization.location?.address?.country) {
-    embeddableValues.push(organization.location.address.country);
-  }
+  // Add geolocations context (formatted addresses for location-based semantic search)
+  const locationValues = extractGeolocationsEmbeddableValues(
+    organization.geolocations,
+    'en'
+  );
+  embeddableValues.push(...locationValues);
 
   return embeddableValues.filter(Boolean).join('. ');
 }

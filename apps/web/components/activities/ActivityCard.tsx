@@ -87,7 +87,7 @@ export function ActivityCard({
           {/* Location */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 shrink-0" />
-            <span>{formatLocationShort(activity.location)}</span>
+            <span>{formatLocationShort(activity.geolocations, activity.language)}</span>
             {distance !== undefined && (
               <span className="text-xs">({(distance / 1000).toFixed(0)} km)</span>
             )}
@@ -114,7 +114,7 @@ export function ActivityCard({
                     key={index}
                     className="rounded-sm bg-gray-100 border border-gray-300 px-2 py-0.5 text-xs font-medium"
                   >
-                    {skill.name}
+                    {skill}
                   </span>
                 ))}
                 {activity.skills.length > 3 && (

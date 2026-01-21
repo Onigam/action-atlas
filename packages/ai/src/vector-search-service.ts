@@ -272,8 +272,9 @@ async function manualVectorSearch(
     const { latitude, longitude, maxDistance = 50000 } = location;
 
     const withDistance = scored.map((doc: ActivityDocument & { relevanceScore: number }) => {
-      const docLng = doc.location?.coordinates?.coordinates?.[0] ?? 0;
-      const docLat = doc.location?.coordinates?.coordinates?.[1] ?? 0;
+      // Use first geolocation's coordinates
+      const docLng = doc.geolocations?.[0]?.coordinates?.[0] ?? 0;
+      const docLat = doc.geolocations?.[0]?.coordinates?.[1] ?? 0;
 
       // Haversine approximation
       const distance = Math.sqrt(

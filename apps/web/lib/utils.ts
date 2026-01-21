@@ -1,4 +1,4 @@
-import type { Location } from '@action-atlas/types';
+import type { Geolocation, Location } from '@action-atlas/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -68,30 +68,54 @@ export function truncate(text: string, maxLength: number): string {
 }
 
 /**
- * Format a location address to a short string
+ * Format geolocations to a short string
+ * Extracts the first formatted address from geolocations array
+ *
+ * @param geolocations - Array of geolocation objects or undefined
+ * @param preferredLanguage - Language preference for formatted address (default: 'en')
+ * @returns Formatted location string
  */
-export function formatLocationShort(location: Location | string): string {
-  // Handle new structure: { address: { city, country } }
-  if (typeof location === 'object' && location?.address?.city) {
-    const { city, country } = location.address;
-    return country ? `${city}, ${country}` : city;
+export function formatLocationShort(
+  geolocations: Geolocation[] | undefined,
+  preferredLanguage: string = 'en'
+): string {
+  if (!geolocations || !Array.isArray(geolocations) || geolocations.length === 0) {
+    return 'Location not specified';
   }
 
-  // Handle legacy seed data: string location
-  if (typeof location === 'string') {
-    // Format: "france - paris,france" -> "Paris, France"
-    const parts = location.split(' - ');
-    if (parts.length > 1 && parts[1]) {
-      return parts[1]
-        .split(',')
-        .map(s => s.trim())
-        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(', ');
-    }
-    return location;
+  // Get the first geolocation
+  const geo = geolocations[0];
+  if (!geo?.formattedAddress || geo.formattedAddress.length === 0) {
+    return 'Location not specified';
   }
 
-  return 'Location not specified';
+  // Try to find the preferred language
+  const preferred = geo.formattedAddress.find(
+    (addr) => addr.language === preferredLanguage
+  );
+
+  if (preferred?.formattedAddress) {
+    return preferred.formattedAddress;
+  }
+
+  // Fallback to first available
+  return geo.formattedAddress[0]?.formattedAddress ?? 'Location not specified';
+}
+
+/**
+ * Format a Location object (legacy format) to a short string
+ * Used for organizations and other entities that still use the old Location type
+ *
+ * @param location - Location object with address
+ * @returns Formatted location string
+ */
+export function formatLegacyLocationShort(location: Location | undefined): string {
+  if (!location?.address?.city) {
+    return 'Location not specified';
+  }
+
+  const { city, country } = location.address;
+  return country ? `${city}, ${country}` : city;
 }
 
 /**
