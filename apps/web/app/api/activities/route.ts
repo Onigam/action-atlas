@@ -140,7 +140,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Create activity with all fields including embedding
     const activity = await createActivity({
       ...activityData,
-      searchableText,
       embedding,
       embeddingModel: 'text-embedding-3-small',
       embeddingUpdatedAt: new Date(),
