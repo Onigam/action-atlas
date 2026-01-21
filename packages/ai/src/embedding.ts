@@ -104,7 +104,7 @@ interface TimeCommitmentInput {
 interface ActivityEmbeddingInput {
   title: string;
   description: string;
-  organization?: { name?: string; mission?: string };
+  organization?: { name?: string; description?: string; mission?: string };
   skills?: string[];
   category?: string[];
   geolocations?: GeolocationInput[];
@@ -237,11 +237,14 @@ export function prepareActivityForEmbedding(
   if (activity.organization?.name) {
     parts.push(`Organization: ${activity.organization.name}`);
   }
+  if (activity.organization?.description) {
+    parts.push(`Organization description: ${activity.organization.description}`);
+  }
   if (activity.organization?.mission) {
-    parts.push(activity.organization.mission);
+    parts.push(`Organization mission: ${activity.organization.mission}`);
   }
 
-  return parts.filter(Boolean).join('. ');
+  return parts.filter(Boolean).join('. \n');
 }
 
 /**

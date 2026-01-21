@@ -49,6 +49,7 @@ interface CliArgs {
   help: boolean;
   delay: number;
   reset: boolean;
+  dry: boolean;
 }
 
 function parseArgs(): CliArgs {
@@ -65,6 +66,7 @@ function parseArgs(): CliArgs {
     verbose: args.includes('--verbose') || args.includes('-v'),
     help: args.includes('--help') || args.includes('-h'),
     reset: args.includes('--reset'),
+    dry: args.includes('--dry'),
   };
 }
 
@@ -80,6 +82,7 @@ ${chalk.bold('Options:')}
   --limit <n>      Maximum number of activities to process (default: all)
   --delay <ms>     Delay between batches in milliseconds (default: 1000)
   --reset          Clear all existing embeddings before generating new ones
+  --dry            Dry run: log embedding texts without calling OpenAI API
   --verbose, -v    Show detailed output
   --help, -h       Show this help message
 
@@ -184,7 +187,7 @@ async function main(): Promise<void> {
 
     // Find activities without embeddings (with organization data)
     console.log(chalk.blue('Finding activities without embeddings (with organization lookup)...'));
-    const limit = args.limit ?? 10000; // Reasonable default
+    const limit = args.limit ?? 15000; // Reasonable default
     const activities = await findActivitiesWithoutEmbeddingsWithOrganization(limit);
 
     if (activities.length === 0) {
@@ -217,6 +220,21 @@ async function main(): Promise<void> {
             location: activity.location,
           })
         );
+
+        // Dry mode: log texts and skip API call
+        if (args.dry) {
+          progressBar.stop();
+          for (let i = 0; i < batch.length; i++) {
+            const activity = batch[i];
+            const text = texts[i];
+            const activityId = activity?.activityId || activity?._id?.toString() || 'unknown';
+            console.log(chalk.cyan(`\n--- Activity: ${activityId} ---`));
+            console.log(text);
+          }
+          totalProcessed += batch.length;
+          progressBar.start(activities.length, totalProcessed, { tokens: 0 });
+          continue;
+        }
 
         // Generate embeddings
         const result = await generateEmbeddings(texts);
