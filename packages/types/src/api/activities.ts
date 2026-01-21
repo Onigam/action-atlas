@@ -3,27 +3,36 @@ import { z } from 'zod';
 import {
   Activity,
   Contact,
-  Skill,
   TimeCommitment,
+  ActivityType,
+  ActivityStatus,
 } from '../domain/activity';
-import { Location } from '../domain/location';
+import { Geolocation } from '../domain/location';
 
 export const CreateActivityRequest = z.object({
   title: z.string().min(5).max(200),
   description: z.string().min(50).max(5000),
   organizationId: z.string(),
   category: z.array(z.string()).min(1),
-  skills: z.array(Skill),
-  location: Location,
+  skills: z.array(z.string()), // Simple string array
+  geolocations: z.array(Geolocation),
   timeCommitment: TimeCommitment,
   contact: Contact,
-  website: z.string().url().optional(),
+  type: ActivityType,
+  language: z.string(),
+  remote: z.boolean(),
+  charged: z.boolean(),
+  coverImageUrl: z.string().url().optional(),
+  workLanguages: z.string().optional(),
+  complementaryInformation: z.string().optional(),
+  criteria: z.string().optional(),
 });
 
 export type CreateActivityRequest = z.infer<typeof CreateActivityRequest>;
 
 export const UpdateActivityRequest = CreateActivityRequest.partial().extend({
   isActive: z.boolean().optional(),
+  status: ActivityStatus.optional(),
 });
 
 export type UpdateActivityRequest = z.infer<typeof UpdateActivityRequest>;

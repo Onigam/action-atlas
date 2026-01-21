@@ -1,4 +1,4 @@
-import { generateEmbedding } from '@action-atlas/ai';
+import { generateEmbedding, prepareActivityForEmbedding } from '@action-atlas/ai';
 import {
   connectToDatabase,
   countActivities,
@@ -122,17 +122,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     const body = await request.json();
     const activityData = validateRequest(CreateActivityRequest, body);
 
-    // Generate searchable text for embedding
-    const searchableText = [
-      activityData.title,
-      activityData.description,
-      activityData.skills.map((s) => s.name).join(', '),
-      activityData.category.join(', '),
-      activityData.location.address.city,
-      activityData.location.address.country,
-    ]
-      .filter(Boolean)
-      .join('. ');
+    // Generate searchable text for embedding using the standard preparation function
+    const searchableText = prepareActivityForEmbedding({
+      title: activityData.title,
+      description: activityData.description,
+      skills: activityData.skills,
+      category: activityData.category,
+      geolocations: activityData.geolocations,
+      language: activityData.language,
+    });
 
     // Generate embedding for the activity
     const { embedding } = await generateEmbedding(searchableText);
@@ -140,6 +138,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Create activity with all fields including embedding
     const activity = await createActivity({
       ...activityData,
+      status: 'PUBLISHED',
       embedding,
       embeddingModel: 'text-embedding-3-small',
       embeddingUpdatedAt: new Date(),

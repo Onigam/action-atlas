@@ -9,7 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { Badge } from '@/components/ui/badge';
 import { useOrganization, useOrganizationActivities } from '@/lib/hooks';
-import { formatLocationShort } from '@/lib/utils';
+import { formatLegacyLocationShort } from '@/lib/utils';
 
 export default function OrganizationPage() {
   const params = useParams();
@@ -121,7 +121,7 @@ export default function OrganizationPage() {
                   <div className="flex items-center gap-2 rounded-lg border-2 border-black bg-primary-100 px-3 py-2 shadow-brutal-sm">
                     <MapPin className="h-4 w-4 text-black" />
                     <span className="font-bold text-black">
-                      {formatLocationShort(organization.location)}
+                      {formatLegacyLocationShort(organization.location)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 rounded-lg border-2 border-black bg-secondary-100 px-3 py-2 shadow-brutal-sm">

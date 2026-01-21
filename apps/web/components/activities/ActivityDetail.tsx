@@ -7,7 +7,6 @@ import {
   Award,
   Mail,
   Phone,
-  Globe,
   Calendar,
   Share2,
   Building,
@@ -127,7 +126,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
           <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-primary-50 px-3 py-2 shadow-sm">
             <MapPin className="h-4 w-4 text-primary-600" />
             <span className="text-sm font-medium text-gray-700">
-              {formatLocationShort(activity.location)}
+              {formatLocationShort(activity.geolocations, activity.language)}
             </span>
           </div>
           {activity.timeCommitment?.hoursPerWeek && (
@@ -170,12 +169,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
                 className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-primary-50 px-4 py-3 shadow-sm transition-all hover:shadow hover:border-primary-300"
               >
                 <Award className="h-5 w-5 text-primary-600" />
-                <span className="font-medium text-gray-900">{skill.name}</span>
-                {skill.level && (
-                  <Badge variant="outline" className="text-xs">
-                    {skill.level}
-                  </Badge>
-                )}
+                <span className="font-medium text-gray-900">{skill}</span>
               </div>
             ))}
           </div>
@@ -207,8 +201,6 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
             <div>
               <div className="font-bold text-gray-900">
                 {activity.contact.name}
-                {/* Seed data uses surname field */}
-                {activity.contact.surname && ` ${activity.contact.surname}`}
               </div>
               {activity.contact.role && (
                 <div className="text-sm font-medium text-gray-600">
@@ -238,21 +230,6 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
             </div>
           )}
 
-          {activity.website && (
-            <div className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="rounded-lg bg-gray-100 border border-gray-200 p-2">
-                <Globe className="h-5 w-5 text-gray-600" />
-              </div>
-              <a
-                href={activity.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-primary-600 hover:underline"
-              >
-                Visit website
-              </a>
-            </div>
-          )}
         </div>
 
         <div className="mt-8">
@@ -270,24 +247,8 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
         <div className="space-y-4">
           <div className="rounded-lg border border-gray-200 bg-primary-50 p-4 shadow-sm">
             <div className="space-y-1 text-sm font-medium text-gray-700">
-              {/* Handle both new structure (address object) and legacy (string) */}
-              {typeof activity.location === 'object' && activity.location.address ? (
-                <>
-                  {activity.location.address.street && (
-                    <p>{activity.location.address.street}</p>
-                  )}
-                  <p>
-                    {activity.location.address.city}
-                    {activity.location.address.state &&
-                      `, ${activity.location.address.state}`}
-                    {activity.location.address.postalCode &&
-                      ` ${activity.location.address.postalCode}`}
-                  </p>
-                  <p>{activity.location.address.country}</p>
-                </>
-              ) : (
-                <p>{formatLocationShort(activity.location)}</p>
-              )}
+              {/* Display formatted address from geolocations */}
+              <p>{formatLocationShort(activity.geolocations, activity.language)}</p>
             </div>
           </div>
           {/* Map placeholder */}
