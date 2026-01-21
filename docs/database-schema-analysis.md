@@ -71,7 +71,6 @@ This analysis compares the current MongoDB data structure against the domain sch
 
 | Field | Occurrences | Sample Value | Recommended Action |
 |-------|:-----------:|--------------|-------------------|
-| `shortDescription` | 50/50 | Concise activity summary | **Add to schema + embeddable** |
 | `criteria` | 26/50 | Requirements/skills needed | **Add to schema + embeddable** |
 | `coverImageUrl` | 50/50 | Cloudinary URL | Add to schema |
 | `remote` | 50/50 | `true/false` | Add to schema |
@@ -187,7 +186,6 @@ Based on the fields retained in the database after cleanup:
 |-------|:----------:|:------------:|:------------:|-------|
 | `title` | **Yes** | High | **High** | Core semantic content |
 | `description` | **Yes** | High (long text) | **High** | Rich detail for matching |
-| `shortDescription` | **Yes** | High (concise) | **High** | Better for quick semantic matching |
 | `category` | **Yes** | Good | **High** | Multi-value, good for filtering |
 | `criteria` | **Yes** | Good (26/50) | **High** | Skills/requirements extraction |
 | `geolocations.formattedAddress` | **Yes** | Good | **Medium** | Location-based semantic search |
@@ -217,7 +215,6 @@ Activity = {
   // Core semantic fields - HIGH VALUE
   title: embeddable(z.string()),
   description: embeddable(z.string()),
-  shortDescription: embeddable(z.string().optional()),
 
   // Categorical semantic fields
   category: embeddable(z.array(z.string())),
@@ -238,7 +235,6 @@ Activity = {
 ```
 
 **Rationale:**
-- **`shortDescription`**: Concise summary, excellent for semantic matching with shorter queries
 - **`criteria`**: Contains requirements and needed skills (compensates for empty `skills` field)
 - **`geolocations.formattedAddress`**: Enables "volunteering in Paris" semantic queries
 - **Remove `skills`**: Field is empty across all documents - wasted embedding space
@@ -308,7 +304,6 @@ export const Activity = z.object({
   updatedAt: z.date(),
 
   // ADD these fields:
-  shortDescription: embeddable(z.string().optional()),
   criteria: embeddable(z.string().optional()),
   coverImageUrl: z.string().url().optional(),
   remote: z.boolean().optional(),
@@ -334,12 +329,12 @@ pnpm run migrate:embeddings --mode=reset
 |--------|-------|
 | Total fields in database | ~45 |
 | Fields matching schema | 14/17 |
-| Legacy fields to remove | 16 |
-| Useful fields to add to schema | 7 |
+| Legacy fields to remove | 17 |
+| Useful fields to add to schema | 6 |
 | Current embeddable fields | 4 |
 | Effective embeddable fields | 3 (skills empty) |
-| Recommended embeddable fields | 6 |
-| Expected search quality improvement | ~40% (with shortDescription + criteria) |
+| Recommended embeddable fields | 5 |
+| Expected search quality improvement | ~30% (with criteria) |
 
 ---
 
@@ -354,7 +349,6 @@ pnpm run migrate:embeddings --mode=reset
 | `title` | Yes | Yes | Yes |
 | `name` | No | **Remove** | - |
 | `description` | Yes | Yes | Yes |
-| `shortDescription` | No | **Add** | **Add** |
 | `organizationId` | Yes | Yes | - |
 | `category` | Yes | Yes | Yes |
 | `skills` | Yes | Yes | Yes |
@@ -416,7 +410,6 @@ pnpm run migrate:embeddings --mode=reset
   "title": "Help manage our different projects and events",
   "name": "Help manage our different projects and events",  // DUPLICATE
   "description": "As part of an enthusiastic, very dynamic...",
-  "shortDescription": "Use your project and event management skills...",
   "category": ["Health", "Children"],
   "skills": [],  // EMPTY
   "organizationId": "5c2f1facaffc140015270f8a",

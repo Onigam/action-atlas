@@ -28,7 +28,6 @@ export const SearchResult = Activity.extend({
   distance: z.number().optional(), // in meters
   // Seed data compatibility fields
   cuid: z.string().optional(),
-  shortDescription: z.string().optional(),
   coverImageUrl: z.string().optional(),
   charity: z.string().optional(),
   _id: z.string().optional(),

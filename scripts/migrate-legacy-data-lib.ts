@@ -38,7 +38,8 @@ export const LEGACY_FIELDS_TO_REMOVE = [
   'startDate',                   // Decision made to cleanup unused fields
   'createdBy',                   // Decision made to cleanup unused fields
   'countriesImpacted',           // Decision made to cleanup unused fields
-  'translation'                  // Decision made to cleanup unused fields
+  'translation',                 // Decision made to cleanup unused fields
+  'shortDescription'             // Removed - use description field instead
 ] as const;
 
 
@@ -126,7 +127,6 @@ export interface LegacyDocument {
   charity?: string;
   organizationId?: string;
   description?: string;
-  shortDescription?: string;
   geolocations?: Array<{
     formattedAddress?: Array<{ formattedAddress?: string }>;
     coordinates?: [number, number];
@@ -233,14 +233,6 @@ export function transformDocument(doc: LegacyDocument, cleanup: boolean): Transf
     updates.organizationId = doc.charity;
     if (cleanup) {
       fieldsToUnset.push('charity');
-    }
-  }
-
-  // Use shortDescription if description is missing
-  if (!doc.description && doc.shortDescription) {
-    updates.description = doc.shortDescription;
-    if (cleanup) {
-      fieldsToUnset.push('shortDescription');
     }
   }
 

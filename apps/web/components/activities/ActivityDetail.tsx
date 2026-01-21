@@ -36,9 +36,6 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
     (cat) => ACTIVITY_CATEGORIES[cat]?.label ?? cat
   );
 
-  // Seed data uses shortDescription field
-  const description = activity.shortDescription || activity.description;
-
   // Seed data uses charity field instead of organizationId
   const organizationId = activity.organizationId || activity.charity || '';
 
@@ -51,7 +48,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       if (navigator.share) {
         await navigator.share({
           title: activity.title,
-          text: (description || '').slice(0, 160),
+          text: (activity.description || '').slice(0, 160),
           url,
         });
       } else {
@@ -156,7 +153,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
           About this opportunity
         </h2>
         <p className="whitespace-pre-wrap text-base leading-relaxed text-gray-700">
-          {description}
+          {activity.description}
         </p>
       </div>
 
