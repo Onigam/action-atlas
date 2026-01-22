@@ -1,54 +1,145 @@
 /**
  * Known activity categories with display names and descriptions.
- * This is used for displaying labels - unknown categories will show their raw value.
+ * Ordered by count in the database (most popular first).
  */
 export const ACTIVITY_CATEGORIES: Record<
   string,
   { label: string; description: string }
 > = {
-  education: {
+  Children: {
+    label: 'Children',
+    description: 'Programs for children and young people',
+  },
+  Education: {
     label: 'Education',
     description: 'Teaching, tutoring, mentoring',
   },
-  environment: {
-    label: 'Environment',
-    description: 'Conservation, cleanup, sustainability',
+  Poverty: {
+    label: 'Poverty',
+    description: 'Fighting poverty and economic hardship',
   },
-  health: {
+  Health: {
     label: 'Health',
     description: 'Healthcare, wellness, support',
   },
-  'social-services': {
-    label: 'Social Services',
-    description: 'Community support, assistance programs',
+  'Social integration': {
+    label: 'Social integration',
+    description: 'Helping people integrate into society',
   },
-  'arts-culture': {
+  Hunger: {
+    label: 'Hunger',
+    description: 'Food security and nutrition programs',
+  },
+  Environment: {
+    label: 'Environment',
+    description: 'Conservation, cleanup, sustainability',
+  },
+  'Human rights': {
+    label: 'Human rights',
+    description: 'Advocacy and protection of human rights',
+  },
+  Disability: {
+    label: 'Disability',
+    description: 'Support for people with disabilities',
+  },
+  'Gender Equality': {
+    label: 'Gender Equality',
+    description: 'Promoting gender equality and women empowerment',
+  },
+  'Sustainable cities': {
+    label: 'Sustainable cities',
+    description: 'Urban sustainability and livable cities',
+  },
+  Animals: {
+    label: 'Animals',
+    description: 'Animal welfare and protection',
+  },
+  Refugees: {
+    label: 'Refugees',
+    description: 'Support for refugees and displaced people',
+  },
+  'Arts & Culture': {
     label: 'Arts & Culture',
     description: 'Museums, performing arts, heritage',
   },
-  'animal-welfare': {
-    label: 'Animal Welfare',
-    description: 'Shelters, rescue, conservation',
+  'Professional reintegration': {
+    label: 'Professional reintegration',
+    description: 'Helping people return to work',
   },
-  'community-development': {
-    label: 'Community Development',
-    description: 'Infrastructure, urban planning, neighborhoods',
+  Innovation: {
+    label: 'Innovation',
+    description: 'Technology and innovative solutions',
   },
-  youth: {
-    label: 'Youth',
-    description: 'Programs for children and teenagers',
+  Sport: {
+    label: 'Sport',
+    description: 'Sports and physical activities',
   },
-  seniors: {
-    label: 'Seniors',
-    description: 'Elderly care and activities',
+  'Responsible consumption': {
+    label: 'Responsible consumption',
+    description: 'Sustainable consumption practices',
   },
-  technology: {
-    label: 'Technology',
-    description: 'Digital literacy, coding, STEM',
+  Water: {
+    label: 'Water',
+    description: 'Clean water access and sanitation',
   },
-  other: {
-    label: 'Other',
-    description: 'General volunteering opportunities',
+  'Disaster relief': {
+    label: 'Disaster relief',
+    description: 'Emergency response and disaster recovery',
+  },
+  'Clean energy': {
+    label: 'Clean energy',
+    description: 'Renewable energy and clean technology',
+  },
+};
+
+/**
+ * Category presets for quick filtering.
+ * Each preset maps to a list of category keys.
+ */
+export const CATEGORY_PRESETS: Record<
+  string,
+  { label: string; description: string; categories: string[] }
+> = {
+  humanitarian: {
+    label: 'Humanitarian',
+    description: 'Emergency aid and basic needs',
+    categories: [
+      'Children',
+      'Poverty',
+      'Hunger',
+      'Refugees',
+      'Disaster relief',
+      'Human rights',
+    ],
+  },
+  social: {
+    label: 'Social',
+    description: 'Education, health and inclusion',
+    categories: [
+      'Education',
+      'Health',
+      'Disability',
+      'Social integration',
+      'Gender Equality',
+      'Professional reintegration',
+    ],
+  },
+  environmental: {
+    label: 'Environmental',
+    description: 'Planet and sustainability',
+    categories: [
+      'Environment',
+      'Animals',
+      'Water',
+      'Clean energy',
+      'Sustainable cities',
+      'Responsible consumption',
+    ],
+  },
+  'culture-innovation': {
+    label: 'Culture & Innovation',
+    description: 'Arts, sports and technology',
+    categories: ['Arts & Culture', 'Sport', 'Innovation'],
   },
 };
 

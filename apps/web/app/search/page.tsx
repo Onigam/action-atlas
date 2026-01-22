@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryState, parseAsString, parseAsInteger, parseAsArrayOf } from 'nuqs';
+import { useQueryState, parseAsString, parseAsInteger, createParser } from 'nuqs';
 import * as React from 'react';
 import { Suspense } from 'react';
 
@@ -11,12 +11,24 @@ import { SearchBar } from '@/components/search/SearchBar';
 import { SearchResults } from '@/components/search/SearchResults';
 import { useInfiniteSearch, useGeolocation } from '@/lib/hooks';
 
+// Custom parser for comma-separated array values
+const parseAsCommaSeparatedArray = createParser({
+  parse: (value: string) => {
+    if (!value) return [];
+    return value.split(',').map((s) => decodeURIComponent(s.trim())).filter(Boolean);
+  },
+  serialize: (value: string[]) => {
+    if (!value || value.length === 0) return '';
+    return value.map((s) => encodeURIComponent(s)).join(',');
+  },
+});
+
 function SearchContent() {
   const [query, setQuery] = useQueryState('q', parseAsString.withDefault(''));
   // URL-synced filter parameters
   const [urlCategories, setUrlCategories] = useQueryState(
     'categories',
-    parseAsArrayOf(parseAsString).withDefault([])
+    parseAsCommaSeparatedArray.withDefault([])
   );
   const [urlDistance, setUrlDistance] = useQueryState('distance', parseAsInteger);
 
@@ -85,7 +97,7 @@ function SearchContent() {
   const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteSearch({
       query,
-      ...(filters.categories?.[0] && { category: filters.categories[0] }),
+      ...(filters.categories?.length && { category: filters.categories }),
       ...(locationFilter && { location: locationFilter }),
       limit: 20, // Load 20 results per page
     });

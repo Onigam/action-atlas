@@ -27,7 +27,7 @@ export function useInfiniteSearch({
   const debouncedQuery = useDebounce(query, 300);
 
   // Check if we have filters that should trigger a search
-  const hasFilters = Boolean(filters.category || filters.location);
+  const hasFilters = Boolean((filters.category && filters.category.length > 0) || filters.location);
 
   // Search is enabled if: (query >= 3 chars) OR (we have filters applied)
   const shouldSearch = enabled && (debouncedQuery.length >= 3 || hasFilters);

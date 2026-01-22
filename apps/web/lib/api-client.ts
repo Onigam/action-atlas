@@ -6,7 +6,7 @@ import { API_ROUTES } from './constants';
  * Search filters for activities
  */
 export interface SearchFilters {
-  category?: string;
+  category?: string[];
   skills?: string[];
   location?: {
     lat: number;
