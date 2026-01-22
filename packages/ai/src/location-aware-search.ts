@@ -324,6 +324,11 @@ export async function locationAwareSearch(
     | { formattedAddress: string; coordinates: [number, number] }
     | undefined;
 
+  // Track which location mode is being used
+  let locationMode: 'explicit' | 'auto-detected' | 'fallback' | 'none' = 'none';
+
+  console.log(`[Location-Aware Search] Starting search for query: "${query.substring(0, 100)}${query.length > 100 ? '...' : ''}"`);
+
   // 1. Generate query embedding
   const embeddingStart = Date.now();
   const cacheKey = createCacheKey(query);
@@ -351,11 +356,26 @@ export async function locationAwareSearch(
       longitude: explicitLocation.longitude,
       maxDistance: explicitLocation.maxDistance ?? 50000,
     };
-  } else if (autoDetectLocation && isGeocodingAvailable()) {
+    locationMode = 'explicit';
+    console.log(`[Location-Aware Search] Using EXPLICIT location: lat=${explicitLocation.latitude}, lng=${explicitLocation.longitude}, maxDistance=${searchLocation.maxDistance}m`);
+  } else if (!autoDetectLocation) {
+    console.log(`[Location-Aware Search] Auto-detection disabled by configuration`);
+  } else if (!isGeocodingAvailable()) {
+    console.log(`[Location-Aware Search] Auto-detection skipped: GOOGLE_MAPS_API_KEY not configured`);
+  }
+
+  if (!explicitLocation && autoDetectLocation && isGeocodingAvailable()) {
     // Auto-detect location from query
     const locationAnalysisStart = Date.now();
+    console.log(`[Location-Aware Search] Auto-detection enabled, analyzing query for location...`);
     const locationResult = await analyzeLocationQuery(query);
     locationAnalysisMs = Date.now() - locationAnalysisStart;
+
+    if (hasValidLocation(locationResult)) {
+      console.log(`[Location-Aware Search] Location detected from query: "${locationResult.formattedAddress}" (language: ${locationResult.language})`);
+    } else {
+      console.log(`[Location-Aware Search] No location detected in query`);
+    }
 
     if (hasValidLocation(locationResult)) {
       const geocodingStart = Date.now();
@@ -370,12 +390,16 @@ export async function locationAwareSearch(
           searchLocation = {
             latitude: geocoded.latitude,
             longitude: geocoded.longitude,
-            maxDistance: 50000, // Default 50km for auto-detected locations
+            maxDistance: 100000, // Default 100km for auto-detected locations
           };
           detectedLocation = {
             formattedAddress: geocoded.formattedAddress,
             coordinates: [geocoded.longitude, geocoded.latitude],
           };
+          locationMode = 'auto-detected';
+          console.log(`[Location-Aware Search] Geocoding successful: "${geocoded.formattedAddress}" -> lat=${geocoded.latitude}, lng=${geocoded.longitude}`);
+        } else {
+          console.log(`[Location-Aware Search] Geocoding returned no results for "${locationResult.formattedAddress}"`);
         }
       } catch (geocodingError) {
         // Geocoding failed (API down, rate limits, network issues, etc.)
@@ -400,6 +424,15 @@ export async function locationAwareSearch(
       longitude: fallbackLocation.longitude,
       maxDistance: fallbackLocation.maxDistance ?? 50000,
     };
+    locationMode = 'fallback';
+    console.log(`[Location-Aware Search] Using FALLBACK location: lat=${fallbackLocation.latitude}, lng=${fallbackLocation.longitude}, maxDistance=${searchLocation.maxDistance}m`);
+  }
+
+  // Log final location mode decision
+  if (locationMode === 'none') {
+    console.log(`[Location-Aware Search] Mode: SEMANTIC ONLY (no location filtering)`);
+  } else {
+    console.log(`[Location-Aware Search] Mode: LOCATION-AWARE (${locationMode}) - will apply geo-proximity sorting`);
   }
 
   // 3. Execute vector search to get candidates
@@ -468,6 +501,7 @@ export async function locationAwareSearch(
 
   if (searchLocation && semanticResults.length > 0) {
     const geoNearStart = Date.now();
+    console.log(`[Location-Aware Search] Applying geo-proximity sorting to ${semanticResults.length} results...`);
 
     // Get all results sorted by geo-proximity (don't limit yet for pagination)
     const geoSortedResults = applyGeoNearSorting(
@@ -478,6 +512,10 @@ export async function locationAwareSearch(
     );
 
     geoNearMs = Date.now() - geoNearStart;
+
+    // Count how many results have valid distances
+    const resultsWithDistance = geoSortedResults.filter(r => r.distance !== undefined).length;
+    console.log(`[Location-Aware Search] Geo-sorting complete: ${resultsWithDistance}/${geoSortedResults.length} results have valid coordinates`);
 
     allResults = geoSortedResults.map((doc) => {
       const result: LocationAwareSearchResult = {
@@ -491,6 +529,7 @@ export async function locationAwareSearch(
     });
   } else {
     // No location filtering - return semantic results directly
+    console.log(`[Location-Aware Search] Returning ${semanticResults.length} results (semantic only, no geo-sorting)`);
     allResults = semanticResults.map((doc) => ({
       document: doc as ActivityDocument,
       relevanceScore: doc.relevanceScore,
@@ -522,6 +561,18 @@ export async function locationAwareSearch(
   if (detectedLocation !== undefined) {
     metadata.detectedLocation = detectedLocation;
   }
+
+  // Final summary log
+  console.log(
+    `[Location-Aware Search] Search complete: ` +
+    `mode=${locationMode}, ` +
+    `results=${paginatedResults.length}/${totalResults} (offset=${offset}, limit=${limit}), ` +
+    `time=${executionTimeMs}ms ` +
+    `(embedding=${embeddingMs}ms, vectorSearch=${vectorSearchMs}ms` +
+    `${locationAnalysisMs !== undefined ? `, locationAnalysis=${locationAnalysisMs}ms` : ''}` +
+    `${geocodingMs !== undefined ? `, geocoding=${geocodingMs}ms` : ''}` +
+    `${geoNearMs !== undefined ? `, geoNear=${geoNearMs}ms` : ''})`
+  );
 
   return {
     results: paginatedResults,
