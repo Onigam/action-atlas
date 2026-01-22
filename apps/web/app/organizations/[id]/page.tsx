@@ -8,6 +8,7 @@ import { ActivityCard } from '@/components/activities/ActivityCard';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { Badge } from '@/components/ui/badge';
+import { MarkdownContent } from '@/components/ui/markdown-content';
 import { useOrganization, useOrganizationActivities } from '@/lib/hooks';
 import { formatLegacyLocationShort } from '@/lib/utils';
 
@@ -104,16 +105,22 @@ export default function OrganizationPage() {
                   </Badge>
                 </div>
 
-                <p className="mb-6 text-lg font-bold text-black/90">
-                  {organization.description}
-                </p>
+                <div className="mb-6">
+                  <MarkdownContent
+                    content={organization.description}
+                    className="text-lg font-bold text-black/90 prose-p:text-black/90"
+                  />
+                </div>
 
                 {organization.mission && (
                   <div className="mb-6 rounded-xl border-3 border-black bg-white p-4 shadow-brutal-sm">
                     <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-black">
                       Mission
                     </h2>
-                    <p className="font-bold text-gray-800">{organization.mission}</p>
+                    <MarkdownContent
+                      content={organization.mission}
+                      className="font-bold text-gray-800 prose-p:text-gray-800"
+                    />
                   </div>
                 )}
 

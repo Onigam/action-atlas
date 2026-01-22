@@ -16,6 +16,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { MarkdownContent } from '@/components/ui/markdown-content';
 import { ACTIVITY_CATEGORIES, ROUTES } from '@/lib/constants';
 import { formatDate, formatLocationShort } from '@/lib/utils';
 
@@ -151,9 +152,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
         <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
           About this opportunity
         </h2>
-        <p className="whitespace-pre-wrap text-base leading-relaxed text-gray-700">
-          {activity.description}
-        </p>
+        <MarkdownContent content={activity.description || ''} />
       </div>
 
       {/* Skills Required */}

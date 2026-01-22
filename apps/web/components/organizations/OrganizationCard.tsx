@@ -6,12 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { MarkdownContent } from '@/components/ui/markdown-content';
 import { ROUTES } from '@/lib/constants';
-import { formatLegacyLocationShort, truncate } from '@/lib/utils';
+import { formatLegacyLocationShort } from '@/lib/utils';
 
 export interface OrganizationCardProps {
   organization: Organization;
@@ -55,9 +55,12 @@ export function OrganizationCard({
               </div>
             </div>
           </div>
-          <CardDescription className="line-clamp-2 mt-2">
-            {truncate(organization.description, 120)}
-          </CardDescription>
+          <MarkdownContent
+            content={organization.description}
+            truncate
+            lineClamp={2}
+            className="mt-2"
+          />
         </CardHeader>
 
         <CardContent className="space-y-3">
