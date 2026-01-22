@@ -69,7 +69,8 @@ export function truncate(text: string, maxLength: number): string {
 
 /**
  * Format geolocations to a short string
- * Extracts the first formatted address from geolocations array
+ * Selects the most specific/detailed location from geolocations array
+ * (the one with the longest formatted address, which typically has more detail)
  *
  * @param geolocations - Array of geolocation objects or undefined
  * @param preferredLanguage - Language preference for formatted address (default: 'en')
@@ -83,23 +84,29 @@ export function formatLocationShort(
     return 'Location not specified';
   }
 
-  // Get the first geolocation
-  const geo = geolocations[0];
-  if (!geo?.formattedAddress || geo.formattedAddress.length === 0) {
-    return 'Location not specified';
+  // Find the most detailed location by selecting the one with the longest formatted address
+  // More specific addresses (e.g., "Le Guern, 56250 Saint-Nolff, France") are longer
+  // than general ones (e.g., "France")
+  let bestAddress = '';
+
+  for (const geo of geolocations) {
+    if (!geo?.formattedAddress || geo.formattedAddress.length === 0) {
+      continue;
+    }
+
+    // Try to find the preferred language first
+    const preferred = geo.formattedAddress.find(
+      (addr) => addr.language === preferredLanguage
+    );
+
+    const address = preferred?.formattedAddress ?? geo.formattedAddress[0]?.formattedAddress;
+
+    if (address && address.length > bestAddress.length) {
+      bestAddress = address;
+    }
   }
 
-  // Try to find the preferred language
-  const preferred = geo.formattedAddress.find(
-    (addr) => addr.language === preferredLanguage
-  );
-
-  if (preferred?.formattedAddress) {
-    return preferred.formattedAddress;
-  }
-
-  // Fallback to first available
-  return geo.formattedAddress[0]?.formattedAddress ?? 'Location not specified';
+  return bestAddress || 'Location not specified';
 }
 
 /**
