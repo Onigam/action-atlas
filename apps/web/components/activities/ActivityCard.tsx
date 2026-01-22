@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { MarkdownContent } from '@/components/ui/markdown-content';
 import { ROUTES, ACTIVITY_CATEGORIES } from '@/lib/constants';
-import { truncate, formatLocationShort } from '@/lib/utils';
+import { formatLocationShort } from '@/lib/utils';
 
 export interface ActivityCardProps {
   activity: SearchResult;
@@ -69,9 +69,11 @@ export function ActivityCard({
               </Badge>
             )}
           </div>
-          <CardDescription className="line-clamp-2">
-            {truncate(activity.description || '', 120)}
-          </CardDescription>
+          <MarkdownContent
+            content={activity.description || ''}
+            truncate
+            lineClamp={2}
+          />
         </CardHeader>
 
         <CardContent className="space-y-4">
