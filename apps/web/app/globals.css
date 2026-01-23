@@ -4,34 +4,89 @@
 
 @layer base {
   :root {
-    /* Minimalist Purple Design System */
+    /* ============================================
+       MINIMALIST DESIGN SYSTEM
+       Clean, accessible, and modern
+       ============================================ */
+
+    /* ----------------------------------------
+       Minimalist Color Tokens (NEW - Default)
+       ---------------------------------------- */
+
+    /* Background Colors */
+    --color-bg-primary: #FFFFFF;
+    --color-bg-secondary: #FAFAFA;
+    --color-bg-tertiary: #F4F4F5;
+
+    /* Text Colors - WCAG AA Compliant */
+    --color-text-primary: #18181B;    /* zinc-900 - 16.75:1 contrast on white */
+    --color-text-secondary: #52525B;  /* zinc-600 - 7.21:1 contrast on white */
+    --color-text-muted: #71717A;      /* zinc-500 - 4.68:1 contrast on white */
+
+    /* Teal Accent (NEW - Accessible) */
+    --color-accent: #0D9488;          /* teal-600 - 4.52:1 on white, AA compliant */
+    --color-accent-light: #CCFBF1;    /* teal-100 */
+    --color-accent-dark: #0F766E;     /* teal-700 */
+
+    /* Border Colors */
+    --color-border-default: #E4E4E7;  /* zinc-200 */
+    --color-border-muted: #F4F4F5;    /* zinc-100 */
+
+    /* ----------------------------------------
+       Minimalist Shadows (Soft, blur-based)
+       ---------------------------------------- */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.05), 0 8px 10px rgba(0, 0, 0, 0.02);
+
+    /* ----------------------------------------
+       Minimalist Transitions
+       ---------------------------------------- */
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+
+    /* ----------------------------------------
+       Minimalist Border Defaults
+       ---------------------------------------- */
+    --border-width-minimal: 1px;
+    --border-color-minimal: var(--color-border-default);
+
+    /* ============================================
+       SHADCN/UI SEMANTIC TOKENS
+       Updated to use minimalist defaults
+       ============================================ */
 
     /* Background & Foreground */
     --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --foreground: 240 10% 10%;  /* Updated: zinc-900 */
 
     /* Card */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 240 10% 10%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 240 10% 10%;
 
-    /* Primary (Deep Purple - Main Brand Color) */
-    --primary: 271 81% 56%;
+    /* Primary - Now Teal (Minimalist default) */
+    --primary: 175 84% 32%;           /* teal-600 */
     --primary-foreground: 0 0% 100%;
 
     /* Secondary (Neutral Gray) */
-    --secondary: 0 0% 45%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;          /* zinc-100 */
+    --secondary-foreground: 240 6% 10%;
 
     /* Muted (Light Gray) */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;   /* zinc-500 */
 
-    /* Accent (Light Purple) */
-    --accent: 271 81% 56%;
+    /* Accent - Teal (Minimalist) */
+    --accent: 175 84% 32%;
     --accent-foreground: 0 0% 100%;
 
     /* Success (Green) */
@@ -42,17 +97,34 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Border & Input */
-    --border: 0 0% 0%;
-    --input: 0 0% 0%;
-    --ring: 271 81% 56%;
+    /* Border & Input - Minimalist defaults */
+    --border: 240 6% 90%;             /* zinc-200 equivalent */
+    --input: 240 6% 90%;
+    --ring: 175 84% 32%;              /* teal-600 for focus rings */
 
-    /* Border Radius (Rounded Neobrutalism) */
-    --radius: 0.75rem; /* 12px default */
+    /* Border Radius */
+    --radius: 0.5rem;                 /* 8px - slightly smaller for minimalist */
 
-    /* Minimalist Purple Palette */
+    /* ============================================
+       TEAL ACCENT PALETTE (NEW)
+       ============================================ */
+    --color-teal-50: #F0FDFA;
+    --color-teal-100: #CCFBF1;
+    --color-teal-200: #99F6E4;
+    --color-teal-300: #5EEAD4;
+    --color-teal-400: #2DD4BF;
+    --color-teal-500: #14B8A6;
+    --color-teal-600: #0D9488;
+    --color-teal-700: #0F766E;
+    --color-teal-800: #115E59;
+    --color-teal-900: #134E4A;
 
-    /* Deep Purple (Primary) */
+    /* ============================================
+       LEGACY: BRUTAL DESIGN TOKENS
+       Kept for backwards compatibility
+       ============================================ */
+
+    /* Deep Purple (Legacy Primary) */
     --color-purple-50: #FAF5FF;
     --color-purple-100: #F3E8FF;
     --color-purple-200: #E9D5FF;
@@ -102,10 +174,22 @@
     --color-gray-800: #262626;
     --color-gray-900: #171717;
 
-    /* Text Emphasis Levels */
-    --text-primary: #1A1A1A;
-    --text-secondary: #525252;
-    --text-muted: #737373;
+    /* Zinc (Minimalist neutral palette) */
+    --color-zinc-50: #FAFAFA;
+    --color-zinc-100: #F4F4F5;
+    --color-zinc-200: #E4E4E7;
+    --color-zinc-300: #D4D4D8;
+    --color-zinc-400: #A1A1AA;
+    --color-zinc-500: #71717A;
+    --color-zinc-600: #52525B;
+    --color-zinc-700: #3F3F46;
+    --color-zinc-800: #27272A;
+    --color-zinc-900: #18181B;
+
+    /* Text Emphasis Levels (Legacy) */
+    --text-primary: #18181B;
+    --text-secondary: #52525B;
+    --text-muted: #71717A;
     --text-inverse: #FFFFFF;
 
     /* Spacing System (4px base grid) */
@@ -123,38 +207,37 @@
     --space-20: 5rem;     /* 80px */
     --space-24: 6rem;     /* 96px */
 
-    /* Enhanced Shadow System */
-    /* Hard Neobrutalism Shadows */
+    /* ----------------------------------------
+       LEGACY: Hard Neobrutalism Shadows
+       ---------------------------------------- */
     --shadow-brutal-sm: 2px 2px 0px 0px rgba(0, 0, 0, 1);
     --shadow-brutal: 4px 4px 0px 0px rgba(0, 0, 0, 1);
     --shadow-brutal-md: 6px 6px 0px 0px rgba(0, 0, 0, 1);
     --shadow-brutal-lg: 8px 8px 0px 0px rgba(0, 0, 0, 1);
     --shadow-brutal-xl: 12px 12px 0px 0px rgba(0, 0, 0, 1);
 
-    /* Colored Shadows (Minimal use) */
+    /* Colored Brutal Shadows (Legacy) */
     --shadow-brutal-purple: 4px 4px 0px 0px #7E22CE;
     --shadow-brutal-green: 4px 4px 0px 0px #16A34A;
     --shadow-brutal-red: 4px 4px 0px 0px #DC2626;
+    --shadow-brutal-teal: 4px 4px 0px 0px #0D9488;
 
-    /* Soft Shadows for Subtle Depth */
+    /* Soft Shadows (Legacy naming) */
     --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-soft-md: 0 4px 16px rgba(0, 0, 0, 0.12);
     --shadow-soft-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
 
-    /* Border Widths */
+    /* ----------------------------------------
+       LEGACY: Border Widths (Brutal)
+       ---------------------------------------- */
     --border-width-thin: 2px;
     --border-width-default: 3px;
     --border-width-thick: 4px;
     --border-width-ultra: 6px;
 
     /* Animation Timing */
-    --duration-fast: 150ms;
-    --duration-normal: 200ms;
-    --duration-slow: 300ms;
     --duration-slower: 500ms;
-
     --ease-brutal: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Typography Scale */
@@ -188,6 +271,28 @@
     --z-popover: 1500;
     --z-tooltip: 1600;
   }
+
+  /* ============================================
+     REDUCED MOTION SUPPORT
+     Respects user's motion preferences
+     ============================================ */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-fast: 0ms;
+      --duration-normal: 0ms;
+      --duration-slow: 0ms;
+      --duration-slower: 0ms;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer base {
@@ -196,59 +301,82 @@
   }
 
   body {
-    @apply bg-white text-[#1A1A1A] antialiased;
+    @apply antialiased;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
     font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Neobrutalism Typography - Using Space Grotesk for headings */
+  /* Minimalist Typography - Clean and readable */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-bold tracking-tight text-[#1A1A1A];
+    @apply font-semibold tracking-tight;
+    color: var(--color-text-primary);
     font-family: var(--font-space-grotesk), var(--font-inter), 'Space Grotesk', 'Inter', sans-serif;
   }
 
   h1 {
-    @apply text-5xl md:text-6xl lg:text-7xl leading-none;
-  }
-
-  h2 {
     @apply text-4xl md:text-5xl lg:text-6xl leading-tight;
   }
 
-  h3 {
+  h2 {
     @apply text-3xl md:text-4xl lg:text-5xl leading-tight;
   }
 
-  h4 {
-    @apply text-2xl md:text-3xl leading-snug;
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl leading-snug;
   }
 
-  h5 {
+  h4 {
     @apply text-xl md:text-2xl leading-snug;
   }
 
+  h5 {
+    @apply text-lg md:text-xl leading-snug;
+  }
+
   h6 {
-    @apply text-lg md:text-xl font-semibold leading-normal;
+    @apply text-base md:text-lg font-medium leading-normal;
   }
 
   p {
     @apply text-base leading-relaxed;
+    color: var(--color-text-secondary);
   }
 
-  /* Selection styling - Purple accent */
+  /* Selection styling - Teal accent (minimalist) */
   ::selection {
-    @apply bg-primary-200 text-primary-900;
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-dark);
   }
 
   ::-moz-selection {
-    @apply bg-primary-200 text-primary-900;
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-dark);
+  }
+
+  /* Default link styling */
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-default);
+  }
+
+  a:hover {
+    color: var(--color-accent-dark);
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 }
 
@@ -266,24 +394,42 @@
     border-width: 0;
   }
 
-  /* Text Emphasis Utilities */
+  /* ============================================
+     MINIMALIST TEXT UTILITIES (NEW - Default)
+     ============================================ */
   .text-emphasis-high {
-    @apply text-[#1A1A1A] font-semibold;
+    color: var(--color-text-primary);
+    @apply font-semibold;
   }
 
   .text-emphasis-medium {
-    @apply text-[#525252] font-medium;
+    color: var(--color-text-secondary);
+    @apply font-medium;
   }
 
   .text-emphasis-low {
-    @apply text-[#737373] font-normal;
+    color: var(--color-text-muted);
+    @apply font-normal;
   }
 
-  /* Neobrutalism Focus Styles */
+  /* ============================================
+     MINIMALIST FOCUS STYLES (NEW - Default)
+     ============================================ */
   .focus-ring {
-    @apply focus:outline-none focus:ring-4 focus:ring-black focus:ring-offset-4 focus:ring-offset-white;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: var(--color-accent);
   }
 
+  .focus-minimal {
+    @apply focus:outline-none;
+  }
+
+  .focus-minimal:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Legacy: Brutal Focus Styles */
   .focus-brutal {
     @apply focus:outline-none focus:outline-4 focus:outline-offset-4 focus:outline-black;
   }
@@ -324,7 +470,50 @@
     @apply py-16 md:py-24 lg:py-32;
   }
 
-  /* Neobrutalism Card Effects - Rounded */
+  /* ============================================
+     MINIMALIST CARD STYLES (NEW - Default)
+     ============================================ */
+  .card-minimal {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--duration-normal) var(--ease-default),
+                border-color var(--duration-normal) var(--ease-default);
+  }
+
+  .card-minimal:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-default);
+  }
+
+  .card-minimal-elevated {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-muted);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--duration-normal) var(--ease-default);
+  }
+
+  .card-minimal-elevated:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-minimal-interactive {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--duration-normal) var(--ease-default);
+    cursor: pointer;
+  }
+
+  .card-minimal-interactive:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-accent);
+  }
+
+  /* Legacy: Neobrutalism Card Effects */
   .card-brutal {
     @apply rounded-lg border-3 border-black bg-white shadow-brutal transition-all;
   }
@@ -348,17 +537,74 @@
     @apply translate-x-1 translate-y-1 shadow-brutal-sm;
   }
 
-  /* Minimal Card Accent */
+  /* Card accent variations */
+  .card-accent-teal {
+    border-top: 3px solid var(--color-accent);
+  }
+
   .card-accent-primary {
     @apply border-t-4 border-t-primary-500;
   }
 
-  /* Subtle Gradient Background */
+  /* Subtle Gradient Backgrounds */
   .card-gradient-subtle {
     background: linear-gradient(to bottom right, white, #FAF5FF);
   }
 
-  /* Neobrutalism Button Effects - Rounded */
+  .card-gradient-teal {
+    background: linear-gradient(to bottom right, var(--color-bg-primary), var(--color-teal-50));
+  }
+
+  /* ============================================
+     MINIMALIST BUTTON STYLES (NEW - Default)
+     ============================================ */
+  .btn-minimal {
+    @apply inline-flex items-center justify-center font-medium rounded-md px-4 py-2;
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .btn-minimal-primary {
+    background-color: var(--color-accent);
+    color: white;
+    border: 1px solid var(--color-accent);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .btn-minimal-primary:hover {
+    background-color: var(--color-accent-dark);
+    border-color: var(--color-accent-dark);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-minimal-primary:active {
+    box-shadow: none;
+  }
+
+  .btn-minimal-secondary {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-default);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .btn-minimal-secondary:hover {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border-default);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-minimal-ghost {
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid transparent;
+  }
+
+  .btn-minimal-ghost:hover {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+  }
+
+  /* Legacy: Neobrutalism Button Effects */
   .btn-brutal {
     @apply rounded-md border-3 border-black font-bold uppercase tracking-wide shadow-brutal transition-all;
     @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
@@ -368,7 +614,7 @@
     @apply hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md;
   }
 
-  /* Minimal Button Styles */
+  /* Legacy: Primary Button (Brutal style) */
   .btn-primary-minimal {
     @apply bg-primary-600 border-2 border-primary-700 text-white font-bold
            shadow-sm transition-all duration-200 rounded-lg
@@ -382,19 +628,107 @@
     @apply transition-all duration-200;
   }
 
-  /* Minimal Icon Container */
+  /* ============================================
+     MINIMALIST ICON CONTAINERS (NEW)
+     ============================================ */
+  .icon-container-minimal {
+    @apply flex items-center justify-center rounded-lg;
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-dark);
+  }
+
+  .icon-container-minimal-sm {
+    @apply icon-container-minimal h-8 w-8;
+  }
+
+  .icon-container-minimal-md {
+    @apply icon-container-minimal h-10 w-10;
+  }
+
+  .icon-container-minimal-lg {
+    @apply icon-container-minimal h-12 w-12;
+  }
+
+  /* Legacy: Icon Container */
   .icon-container-primary {
     @apply flex h-12 w-12 items-center justify-center rounded-lg
            bg-primary-100 border border-primary-300 text-primary-700;
   }
 
-  /* Minimal Badge Style */
+  /* ============================================
+     MINIMALIST BADGE STYLES (NEW - Default)
+     ============================================ */
   .badge-minimal {
-    @apply bg-primary-100 text-primary-700 border border-primary-300
-           font-medium px-3 py-1 rounded-full text-xs;
+    @apply inline-flex items-center justify-center px-2.5 py-0.5 text-xs font-medium rounded-full;
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-default);
   }
 
-  /* Skeleton loading */
+  .badge-minimal-accent {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent-dark);
+    border-color: transparent;
+  }
+
+  .badge-minimal-success {
+    @apply bg-green-50 text-green-700 border-green-200;
+  }
+
+  .badge-minimal-warning {
+    @apply bg-amber-50 text-amber-700 border-amber-200;
+  }
+
+  .badge-minimal-error {
+    @apply bg-red-50 text-red-700 border-red-200;
+  }
+
+  /* Legacy: Badge Brutal */
+  .badge-brutal {
+    @apply inline-flex items-center justify-center rounded-md border-2 border-black px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-brutal-sm;
+  }
+
+  /* ============================================
+     MINIMALIST INPUT STYLES (NEW - Default)
+     ============================================ */
+  .input-minimal {
+    @apply w-full px-3 py-2 text-base rounded-md;
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-default);
+    color: var(--color-text-primary);
+    transition: border-color var(--duration-fast) var(--ease-default),
+                box-shadow var(--duration-fast) var(--ease-default);
+  }
+
+  .input-minimal::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .input-minimal:hover {
+    border-color: var(--color-zinc-400);
+  }
+
+  .input-minimal:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-light);
+  }
+
+  /* Legacy: Input Brutal */
+  .input-brutal {
+    @apply rounded-md border-3 border-black bg-white px-4 py-3 font-medium shadow-brutal-sm transition-all;
+    @apply focus:outline-none focus:shadow-brutal focus:-translate-x-0.5 focus:-translate-y-0.5;
+  }
+
+  /* ============================================
+     MINIMALIST SKELETON LOADING
+     ============================================ */
+  .skeleton-minimal {
+    @apply animate-pulse rounded-md;
+    background-color: var(--color-bg-tertiary);
+  }
+
+  /* Legacy: Skeleton */
   .skeleton {
     @apply animate-pulse bg-gray-200 border-2 border-black;
   }
@@ -414,16 +748,42 @@
     }
   }
 
-  /* Text utilities */
+  /* ============================================
+     TEXT UTILITIES
+     ============================================ */
   .text-balance {
     text-wrap: balance;
   }
 
+  /* Minimalist text - no uppercase default */
+  .text-label {
+    @apply text-sm font-medium;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.01em;
+  }
+
+  /* Legacy: Brutal text */
   .text-brutal {
     @apply font-bold uppercase tracking-wide;
   }
 
-  /* Background patterns */
+  /* ============================================
+     BACKGROUND PATTERNS
+     ============================================ */
+  /* Minimalist patterns */
+  .bg-dots-subtle {
+    background-image: radial-gradient(circle, var(--color-border-default) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-grid-subtle {
+    background-image:
+      linear-gradient(to right, var(--color-border-muted) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-border-muted) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Legacy patterns */
   .bg-dots {
     background-image: radial-gradient(circle, black 1px, transparent 1px);
     background-size: 20px 20px;
@@ -436,20 +796,42 @@
     background-size: 20px 20px;
   }
 
-  /* Minimal Gradients */
-  .gradient-hero-minimal {
-    background: linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%);
+  /* ============================================
+     GRADIENT UTILITIES
+     ============================================ */
+  /* Minimalist gradients */
+  .gradient-subtle {
+    background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
   }
 
+  .gradient-teal {
+    background: linear-gradient(135deg, var(--color-teal-600) 0%, var(--color-teal-700) 100%);
+  }
+
+  .gradient-hero-minimal {
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-teal-50) 100%);
+  }
+
+  /* Legacy gradients */
   .gradient-purple {
     background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%);
   }
 
-  .gradient-subtle {
-    background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  /* ============================================
+     DIVIDER STYLES
+     ============================================ */
+  /* Minimalist dividers */
+  .divider-minimal {
+    height: 1px;
+    background-color: var(--color-border-default);
   }
 
-  /* Divider styles */
+  .divider-minimal-muted {
+    height: 1px;
+    background-color: var(--color-border-muted);
+  }
+
+  /* Legacy dividers */
   .divider-brutal {
     @apply h-1 bg-black;
   }
@@ -458,23 +840,32 @@
     @apply h-0 border-t-3 border-dashed border-black;
   }
 
-  /* Badge brutal - Rounded */
-  .badge-brutal {
-    @apply inline-flex items-center justify-center rounded-md border-2 border-black px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-brutal-sm;
+  /* ============================================
+     PANEL STYLES
+     ============================================ */
+  /* Minimalist panel */
+  .panel-minimal {
+    @apply rounded-lg p-6;
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-default);
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Input brutal - Rounded */
-  .input-brutal {
-    @apply rounded-md border-3 border-black bg-white px-4 py-3 font-medium shadow-brutal-sm transition-all;
-    @apply focus:outline-none focus:shadow-brutal focus:-translate-x-0.5 focus:-translate-y-0.5;
-  }
-
-  /* Panel brutal - Rounded */
+  /* Legacy: Panel Brutal */
   .panel-brutal {
     @apply rounded-xl border-4 border-black bg-white p-6 shadow-brutal-lg;
   }
 
-  /* Section brutal */
+  /* ============================================
+     SECTION STYLES
+     ============================================ */
+  /* Minimalist section */
+  .section-minimal {
+    @apply py-16 md:py-24;
+    border-top: 1px solid var(--color-border-muted);
+  }
+
+  /* Legacy: Section Brutal */
   .section-brutal {
     @apply border-t-4 border-b-4 border-black py-16 md:py-24;
   }

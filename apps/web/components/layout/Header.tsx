@@ -12,17 +12,17 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur-sm shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-100 bg-white/80 backdrop-blur-sm">
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link
             href={ROUTES.HOME}
-            className="group flex items-center gap-3 transition-colors"
+            className="group flex items-center gap-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-lg"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600 transition-colors group-hover:bg-primary-700">
-              <Search className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">
+              <Search className="h-5 w-5 text-teal-600" />
             </div>
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-zinc-900">
               Action Atlas
             </span>
           </Link>
@@ -31,15 +31,12 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Future: Add authentication buttons here */}
-          {/* <Button variant="outline" size="sm">Sign In</Button> */}
-          {/* <Button variant="primary" size="sm">Get Started</Button> */}
-
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 hover:bg-zinc-50 hover:text-teal-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             aria-label="Toggle mobile menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -51,26 +48,28 @@ export function Header() {
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
-          <nav className="container-custom flex flex-col gap-1 py-4">
-            {[
-              { label: 'Search', href: ROUTES.SEARCH },
-              { label: 'About', href: ROUTES.ABOUT },
-              { label: 'Contact', href: ROUTES.CONTACT },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out ${
+          mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <nav className="container-custom flex flex-col gap-1 py-4 bg-white shadow-sm">
+          {[
+            { label: 'Search', href: ROUTES.SEARCH },
+            { label: 'About', href: ROUTES.ABOUT },
+            { label: 'Contact', href: ROUTES.CONTACT },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium text-zinc-600 hover:bg-zinc-50 hover:text-teal-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

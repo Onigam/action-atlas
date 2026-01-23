@@ -4,26 +4,30 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center justify-center rounded-md border-2 border-black px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-brutal-sm transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
+  'inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
   {
     variants: {
       variant: {
         primary:
-          'bg-primary-200 text-primary-800 border-primary-400 hover:bg-primary-300',
+          'uppercase font-bold border-2 border-black shadow-brutal-sm bg-primary-200 text-primary-800 border-primary-400 hover:bg-primary-300 focus:ring-black',
         secondary:
-          'bg-secondary-100 text-secondary-800 border-secondary-400 hover:bg-secondary-200',
+          'border border-secondary-300 bg-secondary-100 text-secondary-800 hover:bg-secondary-200 focus:ring-secondary-400',
         accent:
-          'bg-accent-100 text-accent-800 border-accent-400 hover:bg-accent-200',
+          'border border-accent-300 bg-accent-100 text-accent-800 hover:bg-accent-200 focus:ring-accent-400',
         destructive:
-          'bg-destructive-500 text-white hover:bg-destructive-600',
+          'border border-destructive-600 bg-destructive-500 text-white hover:bg-destructive-600 focus:ring-destructive-400',
         success:
-          'bg-success-100 text-success-800 border-success-400 hover:bg-success-200',
+          'border border-success-300 bg-success-100 text-success-800 hover:bg-success-200 focus:ring-success-400',
         warning:
-          'bg-warning-100 text-warning-800 border-warning-400 hover:bg-warning-200',
+          'border border-warning-300 bg-warning-100 text-warning-800 hover:bg-warning-200 focus:ring-warning-400',
         outline:
-          'bg-white text-black hover:bg-gray-100',
+          'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400',
         ghost:
-          'border-transparent bg-gray-100 text-black shadow-none hover:bg-gray-200',
+          'border-transparent bg-zinc-100 text-zinc-700 hover:bg-zinc-200 focus:ring-zinc-400',
+        muted:
+          'border border-zinc-200 bg-zinc-100 text-zinc-600 hover:bg-zinc-150 focus:ring-zinc-300',
+        subtle:
+          'border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 focus:ring-teal-300',
       },
     },
     defaultVariants: {
