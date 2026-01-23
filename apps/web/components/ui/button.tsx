@@ -4,24 +4,26 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold uppercase tracking-wide rounded-md border-3 border-black transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed active:translate-x-1 active:translate-y-1 active:shadow-none',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold tracking-wide rounded-md transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {
         primary:
-          'bg-primary-500 text-black shadow-brutal hover:bg-primary-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md',
+          'uppercase border-3 border-black bg-primary-500 text-black shadow-brutal hover:bg-primary-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md active:translate-x-1 active:translate-y-1 active:shadow-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4',
         secondary:
-          'bg-secondary-500 text-white shadow-brutal hover:bg-secondary-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md',
+          'uppercase border-3 border-black bg-secondary-500 text-white shadow-brutal hover:bg-secondary-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md active:translate-x-1 active:translate-y-1 active:shadow-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4',
         accent:
-          'bg-accent-500 text-black shadow-brutal hover:bg-accent-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md',
+          'uppercase border-3 border-black bg-accent-500 text-black shadow-brutal hover:bg-accent-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md active:translate-x-1 active:translate-y-1 active:shadow-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4',
         destructive:
-          'bg-destructive-500 text-white shadow-brutal hover:bg-destructive-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md',
+          'uppercase border-3 border-black bg-destructive-500 text-white shadow-brutal hover:bg-destructive-600 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md active:translate-x-1 active:translate-y-1 active:shadow-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4',
         outline:
-          'bg-white text-black shadow-brutal hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md',
+          'uppercase border-3 border-black bg-white text-black shadow-brutal hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md active:translate-x-1 active:translate-y-1 active:shadow-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4',
         ghost:
-          'border-transparent bg-transparent shadow-none hover:bg-gray-100 rounded-md',
+          'border-transparent bg-transparent shadow-none hover:bg-gray-100 rounded-md focus-visible:ring-2 focus-visible:ring-zinc-400',
         link:
-          'border-transparent bg-transparent shadow-none text-primary-600 underline-offset-4 hover:underline rounded-none',
+          'border-transparent bg-transparent shadow-none text-primary-600 underline-offset-4 hover:underline rounded-none focus-visible:ring-2 focus-visible:ring-primary-500',
+        soft:
+          'bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-sm hover:shadow-md border border-teal-700 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:ring-offset-2 active:bg-teal-800',
       },
       size: {
         sm: 'h-9 px-3 py-2 text-xs',

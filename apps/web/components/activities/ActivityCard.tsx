@@ -1,16 +1,9 @@
 import type { SearchResult } from '@action-atlas/types';
-import { MapPin, Clock, Award } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { MarkdownContent } from '@/components/ui/markdown-content';
 import { ROUTES, ACTIVITY_CATEGORIES } from '@/lib/constants';
 import { formatLocationShort } from '@/lib/utils';
 
@@ -43,92 +36,81 @@ export function ActivityCard({
   const coverImageUrl = activity.coverImageUrl || undefined;
 
   return (
-    <Link href={ROUTES.ACTIVITY(activityId)}>
-      <Card className="card-hover h-full transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md overflow-hidden">
+    <Link
+      href={ROUTES.ACTIVITY(activityId)}
+      className="group block h-full"
+    >
+      <article className="h-full border border-zinc-200 rounded-xl shadow-sm bg-white overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500">
         {/* Cover Image */}
         {coverImageUrl && (
-          <div className="relative w-full h-48 bg-muted">
+          <div className="relative w-full h-40 bg-zinc-100">
             <Image
               src={coverImageUrl}
-              alt={activity.title}
+              alt=""
               fill
-              className="object-cover"
+              className="object-cover rounded-t-xl"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         )}
 
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="line-clamp-2 text-xl">
-              {activity.title}
-            </CardTitle>
-            {relevanceScore && relevanceScore > 0.8 && (
-              <Badge variant="success" className="shrink-0">
-                Match
-              </Badge>
-            )}
-          </div>
-          <MarkdownContent
-            content={activity.description || ''}
-            truncate
-            lineClamp={2}
-          />
-        </CardHeader>
+        {/* Content */}
+        <div className="p-6">
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-zinc-900 line-clamp-2 group-hover:text-teal-700 transition-colors duration-200">
+            {activity.title}
+          </h3>
 
-        <CardContent className="space-y-4">
-          {/* Categories */}
-          <div className="flex flex-wrap gap-1">
-            {categoryLabels.map((label, index) => (
-              <Badge key={index} variant="secondary">
-                {label}
-              </Badge>
-            ))}
-          </div>
-
-          {/* Location */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 shrink-0" />
-            <span>{formatLocationShort(activity.geolocations, activity.language)}</span>
-            {distance !== undefined && (
-              <span className="text-xs">({(distance / 1000).toFixed(0)} km)</span>
-            )}
-          </div>
-
-          {/* Time Commitment */}
-          {activity.timeCommitment?.hoursPerWeek && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 shrink-0" />
-              <span>{activity.timeCommitment.hoursPerWeek} hours/week</span>
-              {activity.timeCommitment.isFlexible && (
-                <span className="text-xs">(flexible)</span>
+          {/* Meta row - Location and Time */}
+          <div className="flex flex-wrap gap-4 mt-3 text-xs text-zinc-500">
+            {/* Location */}
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 shrink-0 text-zinc-400" />
+              <span>{formatLocationShort(activity.geolocations, activity.language)}</span>
+              {distance !== undefined && (
+                <span className="text-zinc-400">({(distance / 1000).toFixed(0)} km)</span>
               )}
             </div>
+
+            {/* Time Commitment */}
+            {activity.timeCommitment?.hoursPerWeek && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4 shrink-0 text-zinc-400" />
+                <span>
+                  {activity.timeCommitment.hoursPerWeek}h/semaine
+                  {activity.timeCommitment.isFlexible && ' (flexible)'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {activity.description && (
+            <p className="text-sm text-zinc-600 line-clamp-2 mt-3">
+              {activity.description.replace(/[#*_`]/g, '').substring(0, 150)}
+            </p>
           )}
 
-          {/* Skills */}
-          {activity.skills && Array.isArray(activity.skills) && activity.skills.length > 0 && (
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Award className="h-4 w-4 shrink-0 mt-0.5" />
-              <div className="flex flex-wrap gap-1">
-                {activity.skills.slice(0, 3).map((skill, index) => (
-                  <span
-                    key={index}
-                    className="rounded-sm bg-gray-100 border border-gray-300 px-2 py-0.5 text-xs font-medium"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {activity.skills.length > 3 && (
-                  <span className="text-xs">
-                    +{activity.skills.length - 3} more
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          {/* Categories and Match indicator */}
+          <div className="flex items-center gap-2 mt-4 flex-wrap">
+            {categoryLabels.map((label, index) => (
+              <Badge key={index} variant="muted" className="text-xs">
+                {label.toLowerCase()}
+              </Badge>
+            ))}
+
+            {/* Match indicator for high relevance */}
+            {relevanceScore && relevanceScore > 0.8 && (
+              <Badge
+                variant="muted"
+                className="text-xs bg-teal-50 text-teal-700"
+              >
+                pertinent
+              </Badge>
+            )}
+          </div>
+        </div>
+      </article>
     </Link>
   );
 }

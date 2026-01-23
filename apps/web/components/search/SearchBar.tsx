@@ -3,8 +3,6 @@
 import { Search, X } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 export interface SearchBarProps {
@@ -18,7 +16,7 @@ export interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = 'Search for volunteering activities...',
+  placeholder = 'Je veux agir pour la biodiversite a Lausanne',
   value = '',
   onChange,
   onSearch,
@@ -58,30 +56,57 @@ export function SearchBar({
       className={cn('relative flex items-center gap-2', className)}
     >
       <div className="relative flex-1">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
-        <Input
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400 transition-colors" />
+        <input
           type="text"
           placeholder={placeholder}
           value={query}
           onChange={handleChange}
           autoFocus={autoFocus}
-          className="h-14 pl-12 pr-12 text-base"
-          aria-label="Search for volunteering activities"
+          className={cn(
+            'flex h-14 w-full rounded-xl border border-zinc-200 bg-white px-12 text-base text-zinc-900',
+            'placeholder:text-zinc-400',
+            'transition-all duration-200',
+            'focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 focus:shadow-sm',
+            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-zinc-50',
+            // Responsive placeholder via CSS - hide full placeholder on mobile
+            '[&::placeholder]:max-sm:text-transparent'
+          )}
+          aria-label="Rechercher des activites de benevolat"
+          data-placeholder-mobile="Rechercher une action..."
         />
+        {/* Mobile placeholder overlay */}
+        {!query && (
+          <span
+            className="absolute left-12 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none sm:hidden"
+            aria-hidden="true"
+          >
+            Rechercher une action...
+          </span>
+        )}
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-sm p-1 text-gray-600 hover:bg-gray-100 hover:text-black transition-colors"
-            aria-label="Clear search"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-all duration-200"
+            aria-label="Effacer la recherche"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
-      <Button type="submit" size="lg" className="h-14 px-8">
-        Search
-      </Button>
+      <button
+        type="submit"
+        className={cn(
+          'h-14 px-6 rounded-xl font-medium text-white',
+          'bg-teal-600 hover:bg-teal-700',
+          'transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:ring-offset-2',
+          'disabled:opacity-50 disabled:cursor-not-allowed'
+        )}
+      >
+        Rechercher
+      </button>
     </form>
   );
 }
