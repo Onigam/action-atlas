@@ -80,7 +80,7 @@ export function ActivityCard({
           {/* Categories */}
           <div className="flex flex-wrap gap-1">
             {categoryLabels.map((label, index) => (
-              <Badge key={index} variant="secondary">
+              <Badge key={index} variant="muted">
                 {label}
               </Badge>
             ))}
