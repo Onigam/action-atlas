@@ -24,7 +24,7 @@ export default function ActivityPage() {
         <div className="container-custom py-8 md:py-12">
           {/* Back link */}
           <Link
-            href={ROUTES.ACTIVITIES}
+            href={ROUTES.SEARCH}
             className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors hover:text-teal-600"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -51,7 +51,7 @@ export default function ActivityPage() {
                   removed.
                 </p>
                 <Link
-                  href={ROUTES.ACTIVITIES}
+                  href={ROUTES.SEARCH}
                   className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-teal-600 transition-colors hover:text-teal-700"
                 >
                   <ArrowLeft className="h-4 w-4" />
