@@ -24,15 +24,15 @@ export function Navigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              'text-sm font-medium transition-colors relative',
+              'text-sm font-medium transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded px-1 py-0.5',
               isActive
-                ? 'text-primary-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-teal-600'
+                : 'text-zinc-600 hover:text-teal-600'
             )}
           >
             {item.label}
             {isActive && (
-              <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary-600 rounded-full" />
+              <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-teal-600 rounded-full" />
             )}
           </Link>
         );
