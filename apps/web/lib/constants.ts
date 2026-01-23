@@ -203,7 +203,6 @@ export const SEARCH_LIMITS = {
 export const ROUTES = {
   HOME: '/',
   SEARCH: '/search',
-  ACTIVITIES: '/activities',
   ACTIVITY: (id: string) => `/activities/${id}` as const,
   ORGANIZATION: (id: string) => `/organizations/${id}` as const,
   ABOUT: '/about',
