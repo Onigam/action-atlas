@@ -1,21 +1,20 @@
-'use client';
-
+import { useState } from 'react';
 import type { SearchResult } from '@action-atlas/types';
 import {
   MapPin,
   Clock,
   Award,
-  Mail,
-  Phone,
   Calendar,
   Share2,
   Building,
+  Send,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { MarkdownContent } from '@/components/ui/markdown-content';
 import { ACTIVITY_CATEGORIES, ROUTES } from '@/lib/constants';
 import { formatDate, formatLocationShort } from '@/lib/utils';
@@ -25,6 +24,13 @@ export interface ActivityDetailProps {
 }
 
 export function ActivityDetail({ activity }: ActivityDetailProps) {
+  const [showInterestForm, setShowInterestForm] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+
   // Get category labels - handle both array and legacy single value
   const categories: string[] = Array.isArray(activity.category)
     ? activity.category
@@ -57,6 +63,41 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       }
     } catch (error) {
       console.error('Error sharing:', error);
+    }
+  };
+
+  const handleInterestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch(
+        `/api/activities/${activity._id || activity.activityId}/contact`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to submit');
+
+      setSubmitStatus('success');
+      setEmail('');
+      setTimeout(() => {
+        setShowInterestForm(false);
+        setSubmitStatus('idle');
+      }, 5000);
+    } catch (error) {
+      console.error('Error submitting interest:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,106 +204,135 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       </div>
 
       {/* Skills Required */}
-      {activity.skills && Array.isArray(activity.skills) && activity.skills.length > 0 && (
-        <div className="rounded-xl border border-zinc-100 bg-white p-6 shadow-sm md:p-8">
-          <h2 className="mb-5 text-xl font-semibold text-zinc-900">
-            Skills
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {activity.skills.map((skill, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 transition-colors hover:border-teal-200 hover:bg-teal-50"
-              >
-                <Award className="h-4 w-4 text-teal-600" />
-                <span className="text-sm font-medium text-zinc-700">{skill}</span>
-              </div>
-            ))}
+      {activity.skills &&
+        Array.isArray(activity.skills) &&
+        activity.skills.length > 0 && (
+          <div className="rounded-xl border border-zinc-100 bg-white p-6 shadow-sm md:p-8">
+            <h2 className="mb-5 text-xl font-semibold text-zinc-900">Skills</h2>
+            <div className="flex flex-wrap gap-2">
+              {activity.skills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 transition-colors hover:border-teal-200 hover:bg-teal-50"
+                >
+                  <Award className="h-4 w-4 text-teal-600" />
+                  <span className="text-sm font-medium text-zinc-700">
+                    {skill}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Schedule */}
       {activity.timeCommitment?.schedule && (
         <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-6 shadow-sm md:p-8">
-          <h2 className="mb-4 text-xl font-semibold text-zinc-900">
-            Schedule
-          </h2>
-          <p className="text-zinc-600">
-            {activity.timeCommitment.schedule}
-          </p>
+          <h2 className="mb-4 text-xl font-semibold text-zinc-900">Schedule</h2>
+          <p className="text-zinc-600">{activity.timeCommitment.schedule}</p>
         </div>
       )}
 
-      {/* Contact Information */}
+      {/* Interest / Contact Form */}
       <div className="rounded-xl border border-zinc-100 bg-white p-6 shadow-sm md:p-8">
         <h2 className="mb-5 text-xl font-semibold text-zinc-900">
-          Contact Information
+          I'm Interested
         </h2>
-        <div className="space-y-3">
-          <div className="flex items-start gap-4 rounded-lg border border-zinc-100 bg-zinc-50 p-4">
-            <div className="rounded-lg bg-teal-50 p-2">
-              <Mail className="h-5 w-5 text-teal-600" />
-            </div>
-            <div>
-              <div className="font-medium text-zinc-900">
-                {activity.contact.name}
+
+        {submitStatus === 'success' ? (
+          <div className="rounded-lg border border-teal-200 bg-teal-50 p-6 text-center">
+            <div className="mb-3 flex justify-center">
+              <div className="rounded-full bg-teal-100 p-3">
+                <Send className="h-6 w-6 text-teal-600" />
               </div>
-              {activity.contact.role && (
-                <div className="text-sm text-zinc-500">
-                  {activity.contact.role}
-                </div>
-              )}
-              <a
-                href={`mailto:${activity.contact.email}`}
-                className="text-sm font-medium text-teal-600 transition-colors hover:text-teal-700"
-              >
-                {activity.contact.email}
-              </a>
             </div>
+            <h3 className="mb-2 text-lg font-medium text-teal-900">
+              Message Sent!
+            </h3>
+            <p className="text-teal-700">
+              The organization has been notified of your interest. They will
+              contact you shortly.
+            </p>
           </div>
-
-          {activity.contact.phone && (
-            <div className="flex items-center gap-4 rounded-lg border border-zinc-100 bg-zinc-50 p-4">
-              <div className="rounded-lg bg-zinc-100 p-2">
-                <Phone className="h-5 w-5 text-zinc-600" />
-              </div>
-              <a
-                href={`tel:${activity.contact.phone}`}
-                className="font-medium text-teal-600 transition-colors hover:text-teal-700"
+        ) : showInterestForm ? (
+          <form onSubmit={handleInterestSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-zinc-700"
               >
-                {activity.contact.phone}
-              </a>
+                Your Email Address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full"
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-zinc-500">
+                We'll share this with the organization so they can reach out to
+                you.
+              </p>
             </div>
-          )}
-        </div>
 
-        <div className="mt-6">
-          <Button variant="soft" size="lg" className="w-full sm:w-auto">
-            Apply Now
-          </Button>
-        </div>
+            {submitStatus === 'error' && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                Something went wrong. Please try again later.
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowInterestForm(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div>
+            <p className="mb-6 text-zinc-600">
+              Interested in this opportunity? Click the button below to get in
+              touch with the organization.
+            </p>
+            <Button
+              size="lg"
+              onClick={() => setShowInterestForm(true)}
+              className="w-full sm:w-auto"
+            >
+              I'm Interested
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Location Details */}
       <div className="rounded-xl border border-zinc-100 bg-white p-6 shadow-sm md:p-8">
-        <h2 className="mb-5 text-xl font-semibold text-zinc-900">
-          Location
-        </h2>
+        <h2 className="mb-5 text-xl font-semibold text-zinc-900">Location</h2>
         <div className="space-y-4">
           <div className="rounded-lg border border-zinc-100 bg-zinc-50 p-4">
             <div className="flex items-center gap-2 text-zinc-600">
               <MapPin className="h-4 w-4 text-zinc-500" />
-              <span>{formatLocationShort(activity.geolocations, activity.language)}</span>
+              <span>
+                {formatLocationShort(activity.geolocations, activity.language)}
+              </span>
             </div>
           </div>
           {/* Map placeholder */}
           <div className="flex h-48 items-center justify-center rounded-lg border border-zinc-100 bg-zinc-50">
             <div className="text-center">
               <div className="mb-2 text-4xl">🗺️</div>
-              <p className="text-sm text-zinc-500">
-                Map view coming soon
-              </p>
+              <p className="text-sm text-zinc-500">Map view coming soon</p>
             </div>
           </div>
         </div>

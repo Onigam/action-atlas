@@ -70,14 +70,25 @@ export async function POST(request: Request): Promise<NextResponse> {
     const activitiesCollection = activities();
 
     // Execute location-aware semantic search
-    const searchResult = await locationAwareSearch(activitiesCollection, searchOptions);
+    const searchResult = await locationAwareSearch(
+      activitiesCollection,
+      searchOptions
+    );
 
     // Transform results to match SearchResponse format
     const results = searchResult.results.map((result) => {
       // Destructure _id separately to handle unknown type from MongoDB
-      const { _id, ...rest } = result.document;
+      const { _id, contact, ...rest } = result.document;
       return {
         ...rest,
+        // Redact PII in search results
+        contact: {
+          ...contact,
+          name: 'Hidden',
+          role: 'Hidden',
+          email: 'hidden@example.com',
+          phone: '0000000000',
+        },
         _id: typeof _id === 'string' ? _id : undefined,
         relevanceScore: result.relevanceScore,
         distance: result.distance,

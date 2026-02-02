@@ -1,4 +1,7 @@
-import { generateEmbedding, prepareActivityForEmbedding } from '@action-atlas/ai';
+import {
+  generateEmbedding,
+  prepareActivityForEmbedding,
+} from '@action-atlas/ai';
 import {
   connectToDatabase,
   deleteActivity,
@@ -47,9 +50,22 @@ export async function GET(
       throw new NotFoundError(`Activity with ID ${id} not found`);
     }
 
+    // REDACT PII
+    // We create a shallow copy and replace the contact object with redacted information
+    const safeActivity = {
+      ...activity,
+      contact: {
+        ...activity.contact,
+        name: 'Hidden',
+        role: 'Hidden',
+        email: 'hidden@example.com',
+        phone: '0000000000',
+      },
+    };
+
     return NextResponse.json(
       {
-        data: activity,
+        data: safeActivity,
       },
       {
         status: 200,
@@ -108,7 +124,13 @@ export async function PATCH(
     }
 
     // Determine if content has changed (needs embedding update)
-    const contentFields = ['title', 'description', 'skills', 'category', 'geolocations'];
+    const contentFields = [
+      'title',
+      'description',
+      'skills',
+      'category',
+      'geolocations',
+    ];
     const contentChanged = contentFields.some((field) => field in updateData);
 
     if (contentChanged) {

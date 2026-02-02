@@ -79,10 +79,25 @@ export async function GET(
     const { pageSize, offset } = getPaginationParams(searchParams);
 
     // Fetch organization's activities
-    const activities = await findActivitiesByOrganization(organization.organizationId, {
-      limit: pageSize,
-      skip: offset,
-    });
+    const rawActivities = await findActivitiesByOrganization(
+      organization.organizationId,
+      {
+        limit: pageSize,
+        skip: offset,
+      }
+    );
+
+    // Redact PII from activities
+    const activities = rawActivities.map((activity) => ({
+      ...activity,
+      contact: {
+        ...activity.contact,
+        name: 'Hidden',
+        role: 'Hidden',
+        email: 'hidden@example.com',
+        phone: '0000000000',
+      },
+    }));
 
     return NextResponse.json(
       {
@@ -174,7 +189,9 @@ export async function PATCH(
           country: z.string(),
         })
         .optional(),
-      status: z.enum(['pending', 'verified', 'rejected', 'suspended']).optional(),
+      status: z
+        .enum(['pending', 'verified', 'rejected', 'suspended'])
+        .optional(),
     });
 
     // Validate and transform update data
