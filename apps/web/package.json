@@ -30,6 +30,7 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.4.0",
+    "vibe-kanban-web-companion": "^0.0.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {

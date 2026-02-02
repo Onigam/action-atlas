@@ -1,9 +1,18 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import './globals.css';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+
+const VibeKanbanWebCompanion = dynamic(
+  () =>
+    import('vibe-kanban-web-companion').then(
+      (mod) => mod.VibeKanbanWebCompanion
+    ),
+  { ssr: false }
+);
 
 const inter = Inter({
   subsets: ['latin'],
@@ -66,9 +75,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans`} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} font-sans`}
+        suppressHydrationWarning
+      >
         <NuqsAdapter>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            {process.env.NODE_ENV === 'development' && (
+              <VibeKanbanWebCompanion />
+            )}
+          </QueryProvider>
         </NuqsAdapter>
       </body>
     </html>
