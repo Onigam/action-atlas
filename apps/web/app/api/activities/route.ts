@@ -1,4 +1,7 @@
-import { generateEmbedding, prepareActivityForEmbedding } from '@action-atlas/ai';
+import {
+  generateEmbedding,
+  prepareActivityForEmbedding,
+} from '@action-atlas/ai';
 import {
   connectToDatabase,
   countActivities,
@@ -49,7 +52,10 @@ export async function GET(request: Request): Promise<NextResponse> {
     // Activities match if they have ANY of the specified categories
     const category = searchParams.get('category');
     if (category) {
-      const categories = category.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      const categories = category
+        .split(',')
+        .map((c) => c.trim())
+        .filter((c) => c.length > 0);
       if (categories.length === 1) {
         // Single category - match activities that include this category
         filter['category'] = categories[0];
@@ -75,7 +81,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     }
 
     // Fetch activities
-    const [results, total] = await Promise.all([
+    const [rawResults, total] = await Promise.all([
       findActivities({
         filter,
         limit: pageSize,
@@ -84,6 +90,18 @@ export async function GET(request: Request): Promise<NextResponse> {
       }),
       countActivities(filter),
     ]);
+
+    // Redact PII from results
+    const results = rawResults.map((activity) => ({
+      ...activity,
+      contact: {
+        ...activity.contact,
+        name: 'Hidden',
+        role: 'Hidden',
+        email: 'hidden@example.com',
+        phone: '0000000000',
+      },
+    }));
 
     return paginatedResponse(results, total, page, pageSize);
   } catch (error) {

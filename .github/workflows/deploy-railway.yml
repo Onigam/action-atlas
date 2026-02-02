@@ -43,6 +43,14 @@ jobs:
             missing_secrets+=("NEXT_PUBLIC_API_URL")
           fi
 
+          if [ -z "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            missing_secrets+=("TELEGRAM_BOT_TOKEN")
+          fi
+
+          if [ -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            missing_secrets+=("TELEGRAM_CHAT_ID")
+          fi
+
           if [ ${#missing_secrets[@]} -ne 0 ]; then
             echo "❌ Missing required secrets:"
             printf '%s\n' "${missing_secrets[@]}"
@@ -100,6 +108,8 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           NEXT_PUBLIC_ENABLE_SEARCH: ${{ secrets.NEXT_PUBLIC_ENABLE_SEARCH || 'true' }}
           NEXT_PUBLIC_ENABLE_GEOSPATIAL: ${{ secrets.NEXT_PUBLIC_ENABLE_GEOSPATIAL || 'true' }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL || 'info' }}
@@ -112,6 +122,8 @@ jobs:
           railway variables --set GOOGLE_API_KEY="$GOOGLE_API_KEY" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
           # railway variables --set REDIS_URL="$REDIS_URL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
           railway variables --set NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
+          railway variables --set TELEGRAM_CHAT_ID="$TELEGRAM_CHAT_ID" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
           railway variables --set NODE_ENV="production" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
           railway variables --set NEXT_PUBLIC_ENABLE_SEARCH="$NEXT_PUBLIC_ENABLE_SEARCH" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
           railway variables --set NEXT_PUBLIC_ENABLE_GEOSPATIAL="$NEXT_PUBLIC_ENABLE_GEOSPATIAL" --environment production --service="${{ secrets.RAILWAY_SERVICE_NAME }}"
