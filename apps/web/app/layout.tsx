@@ -1,18 +1,10 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import './globals.css';
 import { QueryProvider } from '@/components/providers/QueryProvider';
-
-const VibeKanbanWebCompanion = dynamic(
-  () =>
-    import('vibe-kanban-web-companion').then(
-      (mod) => mod.VibeKanbanWebCompanion
-    ),
-  { ssr: false }
-);
+import { VibeKanbanWrapper } from '@/components/VibeKanbanWrapper';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -82,9 +74,7 @@ export default function RootLayout({
         <NuqsAdapter>
           <QueryProvider>
             {children}
-            {process.env.NODE_ENV === 'development' && (
-              <VibeKanbanWebCompanion />
-            )}
+            <VibeKanbanWrapper />
           </QueryProvider>
         </NuqsAdapter>
       </body>
