@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { SearchResult } from '@action-atlas/types';
 import {
   MapPin,
@@ -11,6 +10,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -236,7 +236,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
       {/* Interest / Contact Form */}
       <div className="rounded-xl border border-zinc-100 bg-white p-6 shadow-sm md:p-8">
         <h2 className="mb-5 text-xl font-semibold text-zinc-900">
-          I'm Interested
+          I&apos;m Interested
         </h2>
 
         {submitStatus === 'success' ? (
@@ -255,7 +255,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
             </p>
           </div>
         ) : showInterestForm ? (
-          <form onSubmit={handleInterestSubmit} className="space-y-4">
+          <form onSubmit={(e) => void handleInterestSubmit(e)} className="space-y-4">
             <div className="space-y-2">
               <label
                 htmlFor="email"
@@ -274,7 +274,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
                 disabled={isSubmitting}
               />
               <p className="text-xs text-zinc-500">
-                We'll share this with the organization so they can reach out to
+                We&apos;ll share this with the organization so they can reach out to
                 you.
               </p>
             </div>
@@ -310,7 +310,7 @@ export function ActivityDetail({ activity }: ActivityDetailProps) {
               onClick={() => setShowInterestForm(true)}
               className="w-full sm:w-auto"
             >
-              I'm Interested
+              I&apos;m Interested
             </Button>
           </div>
         )}

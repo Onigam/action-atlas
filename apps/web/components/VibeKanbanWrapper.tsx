@@ -1,11 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { ComponentType } from 'react';
 
-const VibeKanbanWebCompanion = dynamic(
+const VibeKanbanWebCompanion = dynamic<Record<string, never>>(
   () =>
     import('vibe-kanban-web-companion').then(
-      (mod) => mod.VibeKanbanWebCompanion
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (mod) => mod.VibeKanbanWebCompanion as ComponentType<Record<string, never>>
     ),
   { ssr: false }
 );

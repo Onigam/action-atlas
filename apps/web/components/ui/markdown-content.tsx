@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import ReactMarkdown, { Components } from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 
 import { cn } from '@/lib/utils';
 

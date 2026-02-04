@@ -23,6 +23,12 @@ interface RouteContext {
   }>;
 }
 
+// Helper to safely get charity field from activity (legacy data support)
+function getCharityField(activity: Record<string, unknown>): string | undefined {
+  const charity = activity['charity'];
+  return typeof charity === 'string' ? charity : undefined;
+}
+
 /**
  * POST /api/activities/:id/contact - Send interest message to Telegram
  */
@@ -34,7 +40,7 @@ export async function POST(
     await connectToDatabase();
 
     const { id } = await context.params;
-    const body = await request.json();
+    const body: unknown = await request.json();
     const { email } = validateRequest(ContactRequest, body);
 
     // Fetch activity details
@@ -43,9 +49,10 @@ export async function POST(
       throw new NotFoundError(`Activity with ID ${id} not found`);
     }
 
-    // Fetch charity/organization details
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const organizationId = activity.organizationId || (activity as any).charity;
+    // Fetch charity/organization details (support legacy charity field)
+    const activityRecord = activity as unknown as Record<string, unknown>;
+    const charityField = getCharityField(activityRecord);
+    const organizationId = activity.organizationId || charityField;
     let charityName = 'Unknown Organization';
 
     if (organizationId) {
@@ -54,14 +61,14 @@ export async function POST(
         const organization = await findOrganizationById(organizationId);
         if (organization) {
           charityName = organization.name;
-        } else if ((activity as any).charity) {
+        } else if (charityField) {
           // Fallback to charity field if organization lookup fails but charity field exists
-          charityName = (activity as any).charity;
+          charityName = charityField;
         }
-      } catch (error) {
+      } catch {
         // Fallback to charity string if organization lookup fails
-        if ((activity as any).charity) {
-          charityName = (activity as any).charity;
+        if (charityField) {
+          charityName = charityField;
         }
       }
     }
