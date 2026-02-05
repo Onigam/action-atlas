@@ -1,5 +1,20 @@
 # Complete Guide: Deploying Vibe Kanban on Oracle Cloud Free Tier with GitHub Actions Integration
 
+## Overview
+
+This guide documents the deployment of Vibe Kanban as part of our **implementation factory** - the development tooling infrastructure used to analyze, develop, and test new features for Action Atlas.
+
+**Important:** Vibe Kanban is **not** part of the Action Atlas service itself. It is a development workflow tool that helps the team manage tasks, track issues, and integrate with AI-assisted development through MCP (Model Context Protocol).
+
+### Why Vibe Kanban?
+
+- **AI-native task management**: Built-in MCP support for seamless integration with AI coding assistants
+- **Free infrastructure**: Runs on Oracle Cloud Free Tier with no ongoing costs
+- **GitHub sync**: Bidirectional synchronization with GitHub Issues keeps tasks in sync
+- **Self-hosted**: Full control over data and customization
+
+---
+
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Oracle Cloud Setup](#oracle-cloud-setup)
