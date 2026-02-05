@@ -31,4 +31,11 @@ export const activityIndexes = [
     key: { createdAt: -1 },
     name: 'created_date',
   },
+  // Unique index for external source deduplication (upsert by provider + externalId)
+  {
+    key: { 'source.provider': 1, 'source.externalId': 1 },
+    name: 'source_provider_externalId',
+    unique: true,
+    sparse: true, // Only index documents that have the source field
+  },
 ] as const;
