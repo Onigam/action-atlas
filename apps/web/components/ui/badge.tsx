@@ -25,7 +25,7 @@ const badgeVariants = cva(
         ghost:
           'border-transparent bg-zinc-100 text-zinc-700 hover:bg-zinc-200 focus:ring-zinc-400',
         muted:
-          'border border-zinc-200 bg-zinc-100 text-zinc-600 hover:bg-zinc-150 focus:ring-zinc-300',
+          'border border-zinc-200 bg-zinc-100 text-zinc-600 cursor-default',
         subtle:
           'border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 focus:ring-teal-300',
       },
