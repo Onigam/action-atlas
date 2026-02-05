@@ -48,6 +48,19 @@ export const Contact = z.object({
 export type Contact = z.infer<typeof Contact>;
 
 /**
+ * Source tracking for imported activities
+ * Used for deduplication and sync with external APIs
+ */
+export const Source = z.object({
+  provider: z.string(), // "montgomery-county", "nyc-opendata", etc.
+  externalId: z.string(), // Original ID from the source API
+  lastSyncedAt: z.date(), // When this activity was last synced
+  sourceUrl: z.string().url().optional(), // Link to original posting
+});
+
+export type Source = z.infer<typeof Source>;
+
+/**
  * Activity schema - aligned with actual MongoDB document structure
  *
  * Embeddable fields (used for vector search embeddings):
@@ -98,6 +111,9 @@ export const Activity = z.object({
   happening: z.string().optional(),
   estimatedTime: z.string().optional(),
   typeOfGood: z.string().optional(),
+
+  // Source tracking for imported activities
+  source: Source.optional(),
 
   // Embedding fields
   embedding: z.array(z.number()).optional(),
